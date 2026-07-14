@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Brand colors — Premium RV Journey */
+  --color-brand-forest: #2D5016;
+  --color-brand-sage: #5C7A3E;
+  --color-brand-sand: #C4A882;
+  --color-brand-earth: #6B4226;
+  --color-brand-cream: #FAF7F2;
+
+  /* Neutrals */
+  --color-neutral-950: #0F1A0A;
+  --color-neutral-700: #3D4A35;
+  --color-neutral-400: #8A9A80;
+  --color-neutral-100: #EEF0EB;
+  --color-neutral-50: #F7F8F5;
+
+  /* Lead type semantic colors */
+  --color-lead-hot: #DC2626;
+  --color-lead-warm: #EA580C;
+  --color-lead-nurture: #2563EB;
+  --color-lead-incomplete: #CA8A04;
+  --color-lead-support: #7C3AED;
+  --color-lead-stalled: #6B7280;
+
+  /* Fonts */
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Background */
+  --color-background: var(--color-brand-cream);
+  --color-foreground: var(--color-neutral-950);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

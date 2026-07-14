@@ -1,0 +1,123 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Lead {
+  id             String    @id @default(cuid())
+  externalId     String    @unique
+  source         String
+  rawPayload     Json
+  normalizedAt   DateTime?
+  createdAt      DateTime  @default(now())
+
+  contact        Contact?
+  classification AiClassification?
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  email     String
+  phone     String?
+  name      String
+  leadId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lead      Lead            @relation(fields: [leadId], references: [id])
+  entries   PipelineEntry[]
+  followUps FollowUpEvent[]
+  alerts    InternalAlert[]
+}
+
+model PipelineStage {
+  id      String @id @default(cuid())
+  name    String
+  order   Int
+  color   String
+  entries PipelineEntry[]
+}
+
+model PipelineEntry {
+  id        String    @id @default(cuid())
+  contactId String
+  stageId   String
+  ownerId   String?
+  enteredAt DateTime  @default(now())
+  stalledAt DateTime?
+  dueAt     DateTime?
+
+  contact Contact       @relation(fields: [contactId], references: [id])
+  stage   PipelineStage @relation(fields: [stageId], references: [id])
+  owner   Owner?        @relation(fields: [ownerId], references: [id])
+}
+
+model AiClassification {
+  id               String   @id @default(cuid())
+  leadId           String   @unique
+  leadType         String
+  urgency          String
+  intent           String
+  bookingReadiness String
+  rawResponse      String
+  createdAt        DateTime @default(now())
+
+  lead Lead @relation(fields: [leadId], references: [id])
+}
+
+model FollowUpSequence {
+  id       String @id @default(cuid())
+  leadType String @unique
+  steps    Json
+
+  events FollowUpEvent[]
+}
+
+model FollowUpEvent {
+  id          String    @id @default(cuid())
+  contactId   String
+  sequenceId  String
+  step        Int
+  scheduledAt DateTime
+  sentAt      DateTime?
+  status      String    @default("pending")
+
+  contact  Contact          @relation(fields: [contactId], references: [id])
+  sequence FollowUpSequence @relation(fields: [sequenceId], references: [id])
+}
+
+model InternalAlert {
+  id        String    @id @default(cuid())
+  contactId String
+  type      String
+  message   String
+  seenAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  contact Contact @relation(fields: [contactId], references: [id])
+}
+
+model Owner {
+  id         String          @id @default(cuid())
+  name       String
+  email      String          @unique
+  department String
+  entries    PipelineEntry[]
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  actorId    String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
