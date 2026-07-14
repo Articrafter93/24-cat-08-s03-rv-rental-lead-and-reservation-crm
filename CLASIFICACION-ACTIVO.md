@@ -1,4 +1,4 @@
-# CLASIFICACIÓN DE ACTIVO — RV Rental Lead & Reservation CRM
+# CLASIFICACIÓN DE ACTIVO — RV Rental Lead and Reservation CRM
 
 > Clasificación del activo digital. Fuente de verdad para el routing GATE 9 y la matriz multicategoría.
 

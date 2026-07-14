@@ -1,4 +1,4 @@
-# BRIEF — RV Rental Lead & Reservation CRM
+# BRIEF — RV Rental Lead and Reservation CRM
 
 > **Fuente de verdad del proyecto** (estilo `cliente-exigente` Modo A). Documento vinculante: toda desviación exige Nota de Cambio numerada en `comunicacion-cliente/`.
 > **Redactado con lente de reclutador exigente**, ingeniería-inversa del post de trabajo real *"AI Automation & Voice Agent Specialist"* (empresa de alquiler de RVs en EE. UU.). El objetivo de cada requisito es **demostrar, ante un reclutador técnico, la destreza exacta que ese puesto exige**.

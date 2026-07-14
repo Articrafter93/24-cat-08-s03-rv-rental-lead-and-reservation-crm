@@ -45,13 +45,10 @@ export default function LoginPage() {
             }}
           >
             <p className="font-medium mb-1" style={{ color: "var(--color-brand-earth)" }}>
-              Demo credentials
+              No signup needed
             </p>
             <p style={{ color: "var(--color-neutral-700)" }}>
-              Email: <code className="font-mono text-xs">demo@rvcorp.com</code>
-            </p>
-            <p style={{ color: "var(--color-neutral-700)" }}>
-              Password: <code className="font-mono text-xs">Demo2026!</code>
+              Pick a demo account below — the password is pre-filled.
             </p>
           </div>
 

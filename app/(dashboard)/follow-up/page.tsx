@@ -1,26 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { prisma } from "@/lib/prisma/client";
+import { getFollowUpOverview } from "@/lib/data";
 import Link from "next/link";
 
-async function getFollowUpData() {
-  const [sequences, activeEvents] = await Promise.all([
-    prisma.followUpSequence.findMany(),
-    prisma.followUpEvent.findMany({
-      where: { status: "pending" },
-      include: {
-        contact: true,
-        sequence: true,
-      },
-      orderBy: { scheduledAt: "asc" },
-      take: 50,
-    }),
-  ]);
-  return { sequences, activeEvents };
-}
-
 export default async function FollowUpPage() {
-  const { sequences, activeEvents } = await getFollowUpData();
+  const { sequences, activeEvents } = await getFollowUpOverview();
 
   return (
     <div className="space-y-8">

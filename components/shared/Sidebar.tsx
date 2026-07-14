@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import type { DemoAccount } from "@/lib/auth/demo-accounts";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: "⬛" },
@@ -12,8 +14,17 @@ const navItems = [
   { href: "/stalled", label: "Stalled", icon: "⏱" },
 ];
 
-export function Sidebar() {
+export function Sidebar({ account }: { account: DemoAccount }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <aside
@@ -47,11 +58,22 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-white/10">
-        <p className="text-xs" style={{ color: "rgba(196, 168, 130, 0.6)" }}>
-          demo@rvcorp.com
-        </p>
+      {/* Account + logout */}
+      <div className="px-4 py-4 border-t border-white/10 space-y-2">
+        <div>
+          <p className="text-xs font-medium text-white truncate">{account.name}</p>
+          <p className="text-xs truncate" style={{ color: "rgba(196, 168, 130, 0.6)" }}>
+            {account.role} · {account.email}
+          </p>
+        </div>
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-60"
+          style={{ backgroundColor: "rgba(255,255,255,0.08)", color: "white" }}
+        >
+          {loggingOut ? "Signing out…" : "Sign out →"}
+        </button>
       </div>
     </aside>
   );

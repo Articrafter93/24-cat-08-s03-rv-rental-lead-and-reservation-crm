@@ -42,3 +42,6 @@ next-env.d.ts
 
 # polimatus session lock (local, per-session)
 .polimatus/
+
+# local dev-server launch config (workspace root .claude/launch.json is canonical)
+.claude/

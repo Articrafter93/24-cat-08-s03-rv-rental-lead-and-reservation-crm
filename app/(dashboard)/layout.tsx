@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentAccount } from "@/lib/auth/current-account";
 import { Sidebar } from "@/components/shared/Sidebar";
 
 export default async function DashboardLayout({
@@ -7,16 +7,15 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const account = await getCurrentAccount();
 
-  if (!user) {
+  if (!account) {
     redirect("/login");
   }
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: "var(--color-brand-cream)" }}>
-      <Sidebar />
+      <Sidebar account={account} />
       <main className="flex-1 overflow-auto">
         <div className="max-w-7xl mx-auto px-6 py-8">
           {children}
