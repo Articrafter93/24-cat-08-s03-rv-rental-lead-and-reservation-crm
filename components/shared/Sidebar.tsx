@@ -12,6 +12,7 @@ const navItems = [
   { href: "/alerts", label: "Alerts", icon: "🔔" },
   { href: "/follow-up", label: "Follow-up", icon: "📋" },
   { href: "/stalled", label: "Stalled", icon: "⏱" },
+  { href: "/knowledge", label: "Knowledge Base", icon: "📚" },
 ];
 
 export function Sidebar({ account }: { account: DemoAccount }) {
