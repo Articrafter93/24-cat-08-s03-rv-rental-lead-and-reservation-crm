@@ -100,7 +100,9 @@ export interface FinalizeInput {
   email: string;
   message: string;
   transcript: string;
-  reservation: VoiceSessionState["reservation"];
+  // Field name must match IngestLeadInput.reservationDraft — the CRM reads that key
+  // to render the structured "Reservation Request" card on the lead detail.
+  reservationDraft: Record<string, unknown>;
 }
 
 /** Pure state transition — no I/O. The caller (API route) performs the actual lead
@@ -199,6 +201,6 @@ export function buildFinalizeInput(state: VoiceSessionState, source: "voice" | "
     email: state.contactEmail ?? "unknown@rvcorp-demo.com",
     message: buildIntakeMessage(state),
     transcript: buildTranscript(state),
-    reservation: state.reservation,
+    reservationDraft: { ...state.reservation } as Record<string, unknown>,
   };
 }

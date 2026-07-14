@@ -6,8 +6,8 @@
 
 ## Estado actual
 
-- **Playbook phase:** `Fases 4-7 completas` (reserva estructurada, entregables de presentación, landing marketing, pulido recruiter-facing + retheme RV Fun Rental). Falta: cadena de cierre (gates + VFH → SELLO PARCIAL).
-- **Next action:** Correr gates de cierre (secrets, vuln, rotos, inspeccion-visual, revision-final, cliente-exigente Modo B, reclutador-exigente) → VFH (HARD STOP humano) → SELLO PARCIAL.
+- **Playbook phase:** `SELLO DE APROBACIÓN PARCIAL emitido` (2026-07-14). Cierre parcial completo: VFH firmada + revision-final PR_APPROVED (WF-011 PASS) + cliente-exigente Modo B EXITO TOTAL + reclutador-exigente APTO_PORTAFOLIO + gates visuales SI.
+- **Next action:** Commit del changeset de la sesión vía `gh` (repo ya existe). Luego cierre FINAL (tarea #12): resolver **persistencia serverless** (store `local` in-memory no sobrevive serverless — ver `00-ARQUITECTURA-PROYECTO.md` cap. Database) → `vrc` deploy → 2.ª VFH sobre URL → SELLO FINAL → `add-to-portfolio`. Capa LLM v2 = `new-feature` aparte.
 - **Clasificación:** `CAT-08` CRM/RevOps — `ficticio` candidato de portafolio (slot CAT-08-S03) — `renderizable: SÍ` — `idioma_render: en`.
 - **Última sesión:** 2026-07-14.
 - **Carpeta:** `24 - CAT-08-S03 - RV Rental Lead and Reservation CRM` (renombrada desde "...Lead & Reservation..." — el `&` rompía `cmd.exe` en scripts npm de Windows).

@@ -1,6 +1,14 @@
 // Deterministic natural-language heuristics for the voice/chat agent. No external
 // API dependency — the conversation must never dead-end because a model call failed.
 // lib/voice/llm.ts layers an optional model-based enhancement on top of this.
+//
+// SECURITY GATE (before shipping lib/voice/llm.ts): today agent replies are
+// deterministic and rendered as plain, React-escaped text, so there is no output
+// injection surface. The MOMENT replies become model-generated, any reply that is
+// rendered as anything richer than plain text (markdown, links) MUST have its link
+// schemes sanitized against an allowlist (https:/tel:/mailto: only) before render —
+// otherwise a prompt-injected reply like `[click](javascript:...)` becomes an
+// executable link. See the render note in components/voice/VoiceAgentPanel.tsx.
 
 const ESCALATION_PHRASES = [
   "talk to a human", "talk to someone", "speak to a person", "speak to someone",

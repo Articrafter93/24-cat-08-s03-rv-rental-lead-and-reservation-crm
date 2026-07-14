@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { getLeadDetail } from "@/lib/data";
+import { getLeadDetail, getPipelineBoardData, listOwners } from "@/lib/data";
 import type { LeadDetail } from "@/lib/data/types";
 import { LeadTypeBadge } from "@/components/pipeline/LeadTypeBadge";
+import { StageOwnerControls } from "@/components/pipeline/StageOwnerControls";
 
 type FollowUpTimelineEvent = LeadDetail["followUps"][number];
 
@@ -16,6 +17,8 @@ export default async function LeadDetailPage({
 
   const classification = contact.lead.classification;
   const currentEntry = contact.entries[0];
+  // Stage + owner option lists for the interactive pipeline controls below.
+  const [{ stages }, owners] = await Promise.all([getPipelineBoardData(), listOwners()]);
   const payload = contact.lead.rawPayload as {
     message?: string;
     transcript?: string;
@@ -101,6 +104,13 @@ export default async function LeadDetailPage({
               }
             />
           </div>
+          <StageOwnerControls
+            entryId={currentEntry.id}
+            stages={stages.map((s) => ({ id: s.id, name: s.name }))}
+            owners={owners.map((o) => ({ id: o.id, name: o.name, department: o.department }))}
+            currentStageId={currentEntry.stageId}
+            currentOwnerId={currentEntry.ownerId}
+          />
         </div>
       )}
 

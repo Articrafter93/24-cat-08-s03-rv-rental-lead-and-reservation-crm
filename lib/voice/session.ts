@@ -10,5 +10,8 @@ export function initVoiceState(): VoiceSessionState {
 }
 
 export function greetingMessage(): string {
-  return "Hi, thanks for calling RV Corp! I'm your virtual assistant — I can answer questions about our rentals or help you check availability for a trip. How can I help you today?";
+  // Explicit AI disclosure up front (industry standard for voice agents and an
+  // AI-transparency expectation): the caller is told it's an automated agent, not
+  // a live person, and that a human handoff is available at any time.
+  return "Hi, thanks for calling RV Corp! I'm the RV Corp AI assistant — a virtual agent, not a live person. I can answer questions about our rentals or help you check availability for a trip, and I can connect you with a human anytime. How can I help you today?";
 }
