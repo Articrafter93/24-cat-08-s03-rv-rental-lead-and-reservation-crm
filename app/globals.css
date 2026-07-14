@@ -1,19 +1,25 @@
 @import "tailwindcss";
 
 @theme inline {
-  /* Brand colors — Premium RV Journey */
-  --color-brand-forest: #2D5016;
-  --color-brand-sage: #5C7A3E;
-  --color-brand-sand: #C4A882;
-  --color-brand-earth: #6B4226;
-  --color-brand-cream: #FAF7F2;
+  /* Brand palette — warm orange + charcoal + teal-blue links.
+     Variable NAMES are kept stable across the app; only values changed when the
+     brand direction moved from a forest-green theme to this RV-rental look. */
+  --color-brand-orange: #E8730C;        /* primary CTA / accent */
+  --color-brand-orange-hover: #CF6309;
+  --color-brand-forest: #37373A;        /* dark surface (sidebars, hero panels) */
+  --color-brand-sage: #4F93C6;          /* teal-blue — links / secondary accent */
+  --color-brand-sand: #D9A46B;          /* warm light accent on dark */
+  --color-brand-earth: #C85F08;         /* deep orange — badge headings */
+  --color-brand-cream: #F5F4F1;         /* light page background */
 
-  /* Neutrals */
-  --color-neutral-950: #0F1A0A;
-  --color-neutral-700: #3D4A35;
-  --color-neutral-400: #8A9A80;
-  --color-neutral-100: #EEF0EB;
-  --color-neutral-50: #F7F8F5;
+  /* Neutrals — warm gray ramp */
+  --color-neutral-950: #1E1F22;
+  --color-neutral-700: #45464B;
+  --color-neutral-500: #6B6C71;
+  --color-neutral-400: #9A9BA0;
+  --color-neutral-200: #D9D9DC;
+  --color-neutral-100: #ECECEE;
+  --color-neutral-50: #F6F6F7;
 
   /* Lead type semantic colors */
   --color-lead-hot: #DC2626;

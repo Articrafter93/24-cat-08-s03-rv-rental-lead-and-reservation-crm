@@ -47,9 +47,9 @@ export function Sidebar({ account }: { account: DemoAccount }) {
               href={item.href}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors"
               style={{
-                backgroundColor: isActive ? "rgba(255,255,255,0.1)" : "transparent",
+                backgroundColor: isActive ? "rgba(232,115,12,0.16)" : "transparent",
                 color: isActive ? "white" : "rgba(255,255,255,0.7)",
-                borderLeft: isActive ? "2px solid white" : "2px solid transparent",
+                borderLeft: isActive ? "2px solid var(--color-brand-orange)" : "2px solid transparent",
               }}
             >
               <span>{item.icon}</span>

@@ -51,7 +51,7 @@ export function NarrativeGuideBanner({ firstLeadId }: { firstLeadId: string | nu
       >
         <div className="flex items-center gap-2">
           <span className="text-base">🗺</span>
-          <p className="text-sm font-medium" style={{ color: "var(--color-brand-forest)" }}>
+          <p className="text-sm font-medium" style={{ color: "var(--color-brand-orange)" }}>
             How the system works — end-to-end lead journey
           </p>
         </div>
@@ -106,12 +106,12 @@ export function NarrativeGuideBanner({ firstLeadId }: { firstLeadId: string | nu
                       <Link
                         href={step.href}
                         className="text-xs font-semibold hover:underline"
-                        style={{ color: "var(--color-brand-forest)" }}
+                        style={{ color: "var(--color-brand-orange)" }}
                       >
                         {step.label}
                       </Link>
                     ) : (
-                      <p className="text-xs font-semibold" style={{ color: "var(--color-brand-forest)" }}>
+                      <p className="text-xs font-semibold" style={{ color: "var(--color-brand-orange)" }}>
                         {step.label}
                       </p>
                     )}

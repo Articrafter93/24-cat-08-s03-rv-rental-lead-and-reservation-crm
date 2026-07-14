@@ -16,6 +16,20 @@ export default async function LeadDetailPage({
 
   const classification = contact.lead.classification;
   const currentEntry = contact.entries[0];
+  const payload = contact.lead.rawPayload as {
+    message?: string;
+    transcript?: string;
+    reservationDraft?: {
+      dates?: string;
+      groupSize?: number;
+      rvType?: string;
+      destination?: string;
+      intentLevel?: string;
+    } | null;
+  };
+  const reservation = payload.reservationDraft;
+  const hasReservation =
+    !!reservation && (reservation.dates || reservation.groupSize || reservation.rvType || reservation.destination);
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -128,19 +142,61 @@ export default async function LeadDetailPage({
         </div>
       )}
 
+      {/* Reservation details — captured by the voice/chat agent */}
+      {hasReservation && reservation && (
+        <div
+          className="rounded-xl p-6"
+          style={{ backgroundColor: "white", border: "1px solid var(--color-neutral-100)" }}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <span
+              className="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+              style={{ backgroundColor: "rgba(232,115,12,0.12)", color: "var(--color-brand-earth)" }}
+            >
+              Reservation Request
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {reservation.dates && <Detail label="Travel Dates" value={reservation.dates} />}
+            {reservation.groupSize != null && <Detail label="Group Size" value={String(reservation.groupSize)} />}
+            {reservation.rvType && <Detail label="RV Type" value={reservation.rvType} />}
+            {reservation.destination && <Detail label="Destination" value={reservation.destination} />}
+            {reservation.intentLevel && <Detail label="Booking Intent" value={reservation.intentLevel} />}
+          </div>
+        </div>
+      )}
+
+      {/* Conversation transcript — voice/chat channels */}
+      {payload.transcript && (
+        <div
+          className="rounded-xl p-6"
+          style={{ backgroundColor: "white", border: "1px solid var(--color-neutral-100)" }}
+        >
+          <h2 className="font-serif text-xl mb-4" style={{ color: "var(--color-neutral-950)" }}>
+            Conversation Transcript
+          </h2>
+          <pre
+            className="text-xs whitespace-pre-wrap font-mono rounded-lg p-4"
+            style={{ backgroundColor: "var(--color-neutral-50)", color: "var(--color-neutral-700)" }}
+          >
+            {payload.transcript}
+          </pre>
+        </div>
+      )}
+
       {/* Source */}
       <div
         className="rounded-xl p-6"
         style={{ backgroundColor: "white", border: "1px solid var(--color-neutral-100)" }}
       >
         <h2 className="font-serif text-xl mb-4" style={{ color: "var(--color-neutral-950)" }}>
-          Original Message
+          {payload.transcript ? "Intake Summary" : "Original Message"}
         </h2>
         <p className="text-sm" style={{ color: "var(--color-neutral-700)" }}>
           Source: <span className="font-medium">{contact.lead.source}</span>
         </p>
         <p className="mt-2 text-sm" style={{ color: "var(--color-neutral-700)" }}>
-          {(contact.lead.rawPayload as { message?: string }).message ?? "No message"}
+          {payload.message ?? "No message"}
         </p>
       </div>
     </div>

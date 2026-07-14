@@ -116,7 +116,7 @@ export function VoiceAgentPanel() {
             <div
               className="max-w-[80%] rounded-xl px-4 py-2 text-sm"
               style={{
-                backgroundColor: m.role === "user" ? "var(--color-brand-forest)" : "var(--color-neutral-50)",
+                backgroundColor: m.role === "user" ? "var(--color-brand-orange)" : "var(--color-neutral-50)",
                 color: m.role === "user" ? "white" : "var(--color-neutral-950)",
               }}
             >
@@ -146,7 +146,7 @@ export function VoiceAgentPanel() {
             disabled={state.done}
             className="rounded-full w-11 h-11 flex-shrink-0 flex items-center justify-center text-lg transition-opacity disabled:opacity-50"
             style={{
-              backgroundColor: listening ? "#DC2626" : "var(--color-brand-forest)",
+              backgroundColor: listening ? "#DC2626" : "var(--color-brand-orange)",
               color: "white",
             }}
             aria-label={listening ? "Stop listening" : "Start speaking"}
@@ -166,7 +166,7 @@ export function VoiceAgentPanel() {
           type="submit"
           disabled={state.done || sending || !inputValue.trim()}
           className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: "var(--color-brand-forest)" }}
+          style={{ backgroundColor: "var(--color-brand-orange)" }}
         >
           Send
         </button>

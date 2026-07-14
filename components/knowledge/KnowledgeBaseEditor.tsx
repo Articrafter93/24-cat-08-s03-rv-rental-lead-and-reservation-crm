@@ -106,7 +106,7 @@ export function KnowledgeBaseEditor({ initialEntries }: { initialEntries: FaqEnt
       <button
         onClick={() => setShowAddForm((v) => !v)}
         className="rounded-lg px-4 py-2 text-sm font-medium text-white transition-opacity"
-        style={{ backgroundColor: "var(--color-brand-forest)" }}
+        style={{ backgroundColor: "var(--color-brand-orange)" }}
       >
         {showAddForm ? "Cancel" : "+ Add FAQ Entry"}
       </button>
@@ -183,7 +183,7 @@ export function KnowledgeBaseEditor({ initialEntries }: { initialEntries: FaqEnt
                         <button
                           onClick={() => saveEdit(entry.id)}
                           className="rounded-lg px-3 py-1.5 text-xs font-medium text-white"
-                          style={{ backgroundColor: "var(--color-brand-forest)" }}
+                          style={{ backgroundColor: "var(--color-brand-orange)" }}
                         >
                           Save
                         </button>
@@ -308,7 +308,7 @@ function AddFaqForm({
       <button
         type="submit"
         className="rounded-lg px-4 py-2 text-sm font-medium text-white"
-        style={{ backgroundColor: "var(--color-brand-forest)" }}
+        style={{ backgroundColor: "var(--color-brand-orange)" }}
       >
         Create Entry
       </button>
