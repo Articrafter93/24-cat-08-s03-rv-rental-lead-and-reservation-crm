@@ -54,11 +54,11 @@ export default function IntakePage() {
           What happens after submission
         </p>
         <ol className="space-y-1.5 text-sm" style={{ color: "var(--color-neutral-700)" }}>
-          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-forest)" }}>1.</span> Lead is normalized and deduplicated</li>
-          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-forest)" }}>2.</span> AI classifies intent, urgency and booking readiness</li>
-          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-forest)" }}>3.</span> Contact enters the CRM pipeline at the correct stage</li>
-          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-forest)" }}>4.</span> Differentiated follow-up sequence is triggered automatically</li>
-          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-forest)" }}>5.</span> Hot leads generate an immediate internal alert</li>
+          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-orange)" }}>1.</span> Lead is normalized and deduplicated</li>
+          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-orange)" }}>2.</span> AI classifies intent, urgency and booking readiness</li>
+          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-orange)" }}>3.</span> Contact enters the CRM pipeline at the correct stage</li>
+          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-orange)" }}>4.</span> Differentiated follow-up sequence is triggered automatically</li>
+          <li className="flex gap-2"><span className="font-medium" style={{ color: "var(--color-brand-orange)" }}>5.</span> Hot leads generate an immediate internal alert</li>
         </ol>
       </div>
 
@@ -146,7 +146,7 @@ export default function IntakePage() {
           disabled={state === "loading"}
           className="w-full py-3 rounded-lg text-sm font-medium transition-opacity"
           style={{
-            backgroundColor: "var(--color-brand-forest)",
+            backgroundColor: "var(--color-brand-orange)",
             color: "white",
             opacity: state === "loading" ? 0.6 : 1,
           }}

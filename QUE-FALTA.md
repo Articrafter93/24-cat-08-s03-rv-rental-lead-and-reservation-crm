@@ -6,8 +6,8 @@
 
 ## Estado actual
 
-- **Playbook phase:** `Fase 3 completa` (agente de voz/chat inbound — pieza estelar) — verificada end-to-end con Playwright.
-- **Next action:** Fase 4 — Manejo de reserva estructurado (modelo `ReservationDraft` persistido + visible en lead, diferenciar reservation vs support en pipeline).
+- **Playbook phase:** `Fases 4-7 completas` (reserva estructurada, entregables de presentación, landing marketing, pulido recruiter-facing + retheme RV Fun Rental). Falta: cadena de cierre (gates + VFH → SELLO PARCIAL).
+- **Next action:** Correr gates de cierre (secrets, vuln, rotos, inspeccion-visual, revision-final, cliente-exigente Modo B, reclutador-exigente) → VFH (HARD STOP humano) → SELLO PARCIAL.
 - **Clasificación:** `CAT-08` CRM/RevOps — `ficticio` candidato de portafolio (slot CAT-08-S03) — `renderizable: SÍ` — `idioma_render: en`.
 - **Última sesión:** 2026-07-14.
 - **Carpeta:** `24 - CAT-08-S03 - RV Rental Lead and Reservation CRM` (renombrada desde "...Lead & Reservation..." — el `&` rompía `cmd.exe` en scripts npm de Windows).
@@ -45,6 +45,14 @@ Agente de voz/chat inbound — el corazón del puesto. Motor de conversación ag
 - `lib/data/{types,local,prisma}.ts` extendidos: `transcript` + `reservationDraft` al `rawPayload`.
 - Verificado con Playwright: FAQ (respuesta exacta de la KB) → calificación de reserva (5 slots → lead creado, visible en pipeline) → escalación (contacto → lead `support`, clasificado correcto, resumen en el mensaje).
 - **4 bugs reales encontrados y corregidos conduciendo la conversación** (nada de esto lo muestra build/lint): (1) `import from "crypto"` de la FAQ store filtrándose al bundle cliente vía `search→agent→panel` → `randomUUID is not a function` (crypto-browserify no lo tiene) → crash. Fix de CAPAS: cliente importa solo helpers client-safe (`session.ts`), nunca módulos server-only. (2) Hydration mismatch por detección de `window` en render → `useSyncExternalStore` para diferir a post-hidratación. (3) `extractName` rechazaba "My name is X" (cap de 4 palabras antes de quitar el prefijo) → quitar prefijo primero. (4) Escalación seguía pidiendo fechas tras nombre+email + se registraba como booking → `nextMissingSlot` consciente de fase + `buildIntakeMessage` discrimina por `escalationReason` no por `phase` (que el cierre sobrescribe).
+
+## Fases 4-7 (autónomas, 2026-07-14)
+
+- **Fase 4 — reserva estructurada:** el detalle del lead (`leads/[id]`) muestra tarjeta "Reservation Request" (fechas, grupo, RV type, destino, intención) + transcript completo, leídos de `rawPayload.reservationDraft`/`transcript`.
+- **Fase 5 — presentación:** `/how-it-works` con diagrama visual de call-flow (6 pasos), triggers de escalación, métricas sugeridas, divulgación honesta demo↔producción.
+- **Fase 6 — marketing/web:** `app/page.tsx` landing (hero carbón + features + CTA), `components/site/{SiteHeader,SiteFooter}` (header estilo RV Fun Rental con píldora naranja); `/voice` con header integrado.
+- **Fase 7 — pulido:** README recruiter-facing reescrito (inglés, cadena operativa + arquitectura + tabla honesta demo↔prod con Twilio/Vapi/OpenAI/GoHighLevel), `DIRECCION-VISUAL.md` (`Resultado: SI`).
+- **Retheme completo a paleta RV Fun Rental** (empresa objetivo de la entrevista): `--color-brand-orange #E8730C` (CTA), `--color-brand-forest #37373A` (carbón/superficies), `--color-brand-sage #4F93C6` (teal/enlaces), crema. Verificado por estilos computados en runtime.
 
 ## Bloqueantes activos
 
