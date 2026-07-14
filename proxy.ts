@@ -11,7 +11,8 @@ export async function proxy(request: NextRequest) {
     request.nextUrl.pathname.startsWith("/follow-up") ||
     request.nextUrl.pathname.startsWith("/alerts") ||
     request.nextUrl.pathname.startsWith("/stalled") ||
-    request.nextUrl.pathname.startsWith("/intake");
+    request.nextUrl.pathname.startsWith("/intake") ||
+    request.nextUrl.pathname.startsWith("/knowledge");
 
   if (!accountId && isDashboardRoute) {
     const url = request.nextUrl.clone();
