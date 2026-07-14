@@ -1,19 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { prisma } from "@/lib/prisma/client";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentAccount } from "@/lib/auth/current-account";
+import { updatePipelineStage } from "@/lib/data";
 
 const MoveStageSchema = z.object({
-  stageId: z.string().cuid(),
+  stageId: z.string().min(1),
 });
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const account = await getCurrentAccount();
+  if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const body = await request.json();
@@ -22,20 +18,6 @@ export async function PATCH(
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const entry = await prisma.pipelineEntry.update({
-    where: { id },
-    data: { stageId: parsed.data.stageId },
-    include: { stage: true },
-  });
-
-  await prisma.auditLog.create({
-    data: {
-      entityType: "PipelineEntry",
-      entityId: id,
-      action: "stage_changed",
-      actorId: user.id,
-    },
-  });
-
+  const entry = await updatePipelineStage(id, parsed.data.stageId, account.id);
   return NextResponse.json({ success: true, entry });
 }

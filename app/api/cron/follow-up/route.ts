@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { processFollowUpEvents } from "@/lib/followup/engine";
+import { processFollowUpEvents } from "@/lib/data";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;

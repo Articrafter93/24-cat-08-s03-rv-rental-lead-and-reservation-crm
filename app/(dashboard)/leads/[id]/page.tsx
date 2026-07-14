@@ -1,19 +1,9 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma/client";
+import { getLeadDetail } from "@/lib/data";
+import type { LeadDetail } from "@/lib/data/types";
 import { LeadTypeBadge } from "@/components/pipeline/LeadTypeBadge";
 
-async function getLeadDetail(id: string) {
-  const contact = await prisma.contact.findUnique({
-    where: { id },
-    include: {
-      lead: { include: { classification: true } },
-      entries: { include: { stage: true, owner: true } },
-      followUps: { include: { sequence: true }, orderBy: { scheduledAt: "asc" } },
-      alerts: { orderBy: { createdAt: "desc" } },
-    },
-  });
-  return contact;
-}
+type FollowUpTimelineEvent = LeadDetail["followUps"][number];
 
 export default async function LeadDetailPage({
   params,
@@ -110,7 +100,7 @@ export default async function LeadDetailPage({
             Follow-up Timeline
           </h2>
           <div className="space-y-3">
-            {contact.followUps.map((event) => (
+            {contact.followUps.map((event: FollowUpTimelineEvent) => (
               <div key={event.id} className="flex items-center gap-3">
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
@@ -169,4 +159,3 @@ function Detail({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

@@ -1,21 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { prisma } from "@/lib/prisma/client";
+import { getStalledEntries } from "@/lib/data";
 import { StalledTable } from "@/components/stalled/StalledTable";
 
-async function getStalledLeads() {
-  return prisma.pipelineEntry.findMany({
-    where: { stalledAt: { not: null } },
-    include: {
-      contact: { include: { lead: { include: { classification: true } } } },
-      stage: true,
-    },
-    orderBy: { stalledAt: "asc" },
-  });
-}
-
 export default async function StalledPage() {
-  const entries = await getStalledLeads();
+  const entries = await getStalledEntries();
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,4 @@
-# Correo Corporativo Inicial — RV Rental Lead & Reservation CRM
+# Correo Corporativo Inicial — RV Rental Lead and Reservation CRM
 
 > **Generado por:** Skill `/cliente-exigente` Modo A
 > **Fecha:** 2026-07-13

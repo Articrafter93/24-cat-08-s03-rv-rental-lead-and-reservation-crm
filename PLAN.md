@@ -1,4 +1,4 @@
-# PLAN — RV Rental Lead & Reservation CRM
+# PLAN — RV Rental Lead and Reservation CRM
 
 > Hoja de ruta derivada de `BRIEF.md`. Del estado de partida (CRM base heredado) a **pieza de portafolio terminada** que demuestra la cadena completa del puesto *AI Automation & Voice Agent Specialist*.
 > **Este plan NO está aprobado aún.** La aprobación es exclusiva del developer (Plan Mode / `ExitPlanMode`). El agente no auto-aprueba ni construye sobre plan auto-formulado.

@@ -1,43 +1,8 @@
 export const dynamic = "force-dynamic";
 
-import { prisma } from "@/lib/prisma/client";
+import { getDashboardKPIs, getFirstLeadId } from "@/lib/data";
 import { NarrativeGuideBanner } from "@/components/shared/NarrativeGuideBanner";
 import { KPICard } from "@/components/dashboard/KPICard";
-
-async function getDashboardKPIs() {
-  const [
-    totalLeads,
-    hotLeads,
-    stalledLeads,
-    sentFollowUps,
-    totalFollowUps,
-    stageProgression,
-  ] = await Promise.all([
-    prisma.lead.count(),
-    prisma.aiClassification.count({ where: { leadType: "hot" } }),
-    prisma.pipelineEntry.count({ where: { stalledAt: { not: null } } }),
-    prisma.followUpEvent.count({ where: { status: "sent" } }),
-    prisma.followUpEvent.count(),
-    prisma.pipelineEntry.groupBy({ by: ["stageId"], _count: true }),
-  ]);
-
-  const completionRate = totalFollowUps > 0
-    ? Math.round((sentFollowUps / totalFollowUps) * 100)
-    : 0;
-
-  return {
-    totalLeads,
-    hotLeads,
-    stalledLeads,
-    completionRate,
-    stageProgression,
-  };
-}
-
-async function getFirstLeadId() {
-  const contact = await prisma.contact.findFirst({ orderBy: { createdAt: "asc" } });
-  return contact?.id ?? null;
-}
 
 export default async function DashboardPage() {
   const [kpis, firstLeadId] = await Promise.all([getDashboardKPIs(), getFirstLeadId()]);

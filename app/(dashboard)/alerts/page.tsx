@@ -1,18 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { prisma } from "@/lib/prisma/client";
+import { getAlertsFeed } from "@/lib/data";
 import { AlertsFeed } from "@/components/alerts/AlertsFeed";
 
-async function getAlerts() {
-  return prisma.internalAlert.findMany({
-    include: { contact: true },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
-}
-
 export default async function AlertsPage() {
-  const alerts = await getAlerts();
+  const alerts = await getAlertsFeed();
   const unseen = alerts.filter((a) => !a.seenAt).length;
 
   return (

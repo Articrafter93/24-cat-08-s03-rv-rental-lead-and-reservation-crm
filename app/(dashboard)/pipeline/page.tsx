@@ -1,26 +1,10 @@
 export const dynamic = "force-dynamic";
 
-import { prisma } from "@/lib/prisma/client";
+import { getPipelineBoardData } from "@/lib/data";
 import { PipelineBoard } from "@/components/pipeline/PipelineBoard";
 
-async function getPipelineData() {
-  const [stages, entries] = await Promise.all([
-    prisma.pipelineStage.findMany({ orderBy: { order: "asc" } }),
-    prisma.pipelineEntry.findMany({
-      include: {
-        contact: {
-          include: { lead: { include: { classification: true } } },
-        },
-        stage: true,
-      },
-    }),
-  ]);
-
-  return { stages, entries };
-}
-
 export default async function PipelinePage() {
-  const { stages, entries } = await getPipelineData();
+  const { stages, entries } = await getPipelineBoardData();
 
   return (
     <div className="space-y-6">

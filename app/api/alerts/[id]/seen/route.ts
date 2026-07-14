@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma/client";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentAccount } from "@/lib/auth/current-account";
+import { markAlertSeen } from "@/lib/data";
 
-export async function PATCH(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function PATCH(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const account = await getCurrentAccount();
+  if (!account) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-
-  await prisma.internalAlert.update({
-    where: { id },
-    data: { seenAt: new Date() },
-  });
+  await markAlertSeen(id);
 
   return NextResponse.json({ success: true });
 }
