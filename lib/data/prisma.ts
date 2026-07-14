@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma/client";
 import { classifyLead } from "@/lib/ai/classify";
 import { sendConfirmationEmail, sendInternalAlert, sendFollowUpEmail } from "@/lib/email/resend";
@@ -17,12 +18,17 @@ import type {
 // in the route handlers / page files, moved here so both modes share one call surface.
 
 export async function ingestLead(input: IngestLeadInput): Promise<IngestLeadResult> {
-  const { externalId, source, name, email, phone, message } = input;
+  const { externalId, source, name, email, phone, message, transcript, reservationDraft } = input;
 
   const lead = await prisma.lead.upsert({
     where: { externalId },
     update: { normalizedAt: new Date() },
-    create: { externalId, source, rawPayload: { name, email, phone, message }, normalizedAt: new Date() },
+    create: {
+      externalId,
+      source,
+      rawPayload: { name, email, phone, message, transcript, reservationDraft } as Prisma.InputJsonValue,
+      normalizedAt: new Date(),
+    },
   });
 
   const contact = await prisma.contact.upsert({

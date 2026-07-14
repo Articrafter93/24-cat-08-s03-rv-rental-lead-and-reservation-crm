@@ -17,6 +17,10 @@ export interface IngestLeadInput {
   email: string;
   phone?: string;
   message: string;
+  /** Full conversation transcript (voice/chat channels only). Stored in rawPayload. */
+  transcript?: string;
+  /** Structured reservation slots captured by the voice/chat agent. Stored in rawPayload. */
+  reservationDraft?: Record<string, unknown>;
 }
 
 export interface IngestLeadResult {

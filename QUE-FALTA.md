@@ -6,8 +6,8 @@
 
 ## Estado actual
 
-- **Playbook phase:** `Fase 2 completa` (base de conocimiento FAQ editable) — verificada end-to-end en navegador.
-- **Next action:** Fase 3 — Agente de voz/chat inbound (pieza estelar).
+- **Playbook phase:** `Fase 3 completa` (agente de voz/chat inbound — pieza estelar) — verificada end-to-end con Playwright.
+- **Next action:** Fase 4 — Manejo de reserva estructurado (modelo `ReservationDraft` persistido + visible en lead, diferenciar reservation vs support en pipeline).
 - **Clasificación:** `CAT-08` CRM/RevOps — `ficticio` candidato de portafolio (slot CAT-08-S03) — `renderizable: SÍ` — `idioma_render: en`.
 - **Última sesión:** 2026-07-14.
 - **Carpeta:** `24 - CAT-08-S03 - RV Rental Lead and Reservation CRM` (renombrada desde "...Lead & Reservation..." — el `&` rompía `cmd.exe` en scripts npm de Windows).
@@ -35,7 +35,16 @@ Base de conocimiento FAQ real y editable — 9 categorías del contrato (Rental 
 - Verificado en vivo: create → aparece en la lista y sobrevive reload (persistencia server-side confirmada) → edit → persiste → delete → contador reactivo correcto.
 - **Bug encontrado y corregido en el camino:** el contador "N FAQ entries" era texto server-rendered que no reflejaba altas/bajas del cliente — movido al componente cliente, deriva del estado real.
 - **Bug de calidad corregido en `searchFAQ`:** matching por substring crudo colisionaba con palabras de relleno (`"the"` ⊂ `"there"`), inflando resultados irrelevantes — fix: stopwords + coincidencia de palabra completa (regex `\b`). Verificado con smoke test antes/después.
-- **Falta la pieza estelar: agente de voz/chat + reserva + escalación + call-flow** (Fase 3).
+
+## Fase 3 (verificada end-to-end con Playwright)
+
+Agente de voz/chat inbound — el corazón del puesto. Motor de conversación agnóstico al canal (voz o texto alimentan la misma máquina de estados), server-side.
+- `lib/voice/` — `types.ts`, `nlu.ts` (extracción determinista de slots + detección de intención/escalación, sin API), `agent.ts` (máquina de estados: saludo → FAQ → calificación de reserva slot-filling → escalación → cierre), `session.ts` (helpers client-safe), `speech.ts` (wrapper Web Speech API feature-detected).
+- `app/api/voice/turn` — conduce la conversación server-side; al cerrar, crea el lead vía `ingestLead` (mismo pipeline que cualquier canal). Canales `voice`/`chat` agregados a same-origin sin HMAC.
+- `app/(voice)/voice` (pública, cara al cliente) + `components/voice/VoiceAgentPanel.tsx` — UI de llamada: mic (progressive enhancement) + fallback a chat de texto, banner de divulgación honesta (browser demo → Twilio/Vapi en prod).
+- `lib/data/{types,local,prisma}.ts` extendidos: `transcript` + `reservationDraft` al `rawPayload`.
+- Verificado con Playwright: FAQ (respuesta exacta de la KB) → calificación de reserva (5 slots → lead creado, visible en pipeline) → escalación (contacto → lead `support`, clasificado correcto, resumen en el mensaje).
+- **4 bugs reales encontrados y corregidos conduciendo la conversación** (nada de esto lo muestra build/lint): (1) `import from "crypto"` de la FAQ store filtrándose al bundle cliente vía `search→agent→panel` → `randomUUID is not a function` (crypto-browserify no lo tiene) → crash. Fix de CAPAS: cliente importa solo helpers client-safe (`session.ts`), nunca módulos server-only. (2) Hydration mismatch por detección de `window` en render → `useSyncExternalStore` para diferir a post-hidratación. (3) `extractName` rechazaba "My name is X" (cap de 4 palabras antes de quitar el prefijo) → quitar prefijo primero. (4) Escalación seguía pidiendo fechas tras nombre+email + se registraba como booking → `nextMissingSlot` consciente de fase + `buildIntakeMessage` discrimina por `escalationReason` no por `phase` (que el cierre sobrescribe).
 
 ## Bloqueantes activos
 
@@ -50,4 +59,4 @@ Base de conocimiento FAQ real y editable — 9 categorías del contrato (Rental 
 ## Session history
 
 - **2026-07-13:** `become-portfolio` (clon a slot CAT-08-S03, sanitización, álbum) → BRIEF/PLAN/CLASIFICACION reformulados con lente reclutador sobre post real → GATE 1.0 (correo corporativo Modo A con §6 VFH).
-- **2026-07-14:** Plan Mode aprobado (dual-mode datos + login mock + voz Web Speech) → GATE 3 `ghnew` (repo private creado) → Fase 1 completa (`lib/data/` + `lib/auth/`, Supabase Auth retirado, 2 vulnerabilidades npm resueltas, bug de carpeta con `&` corregido, repo renombrado a `...and-reservation-crm`, PR #1 mergeado) → **gobernanza:** 2 bugs del motor `gh`/`ghnew` (`sync-github.ps1`) encontrados en vivo y arreglados con doble prueba (PR #190 orden de `-AutoCommit`; PR #191 manejo de eliminaciones en el changeset) → Fase 2 completa (`lib/faq/`, `/knowledge` editable, 2 bugs de calidad encontrados y corregidos en el camino: contador stale, ruido de stopwords en `searchFAQ`). Pendiente: commit/push (changeset a aprobar) → Fase 3.
+- **2026-07-14:** Plan Mode aprobado (dual-mode datos + login mock + voz Web Speech) → GATE 3 `ghnew` (repo private creado) → Fase 1 completa (`lib/data/` + `lib/auth/`, Supabase Auth retirado, 2 vulnerabilidades npm resueltas, bug de carpeta con `&` corregido, repo renombrado a `...and-reservation-crm`, PR #1 mergeado) → **gobernanza:** 2 bugs del motor `gh`/`ghnew` (`sync-github.ps1`) encontrados en vivo y arreglados con doble prueba (PR #190 orden de `-AutoCommit`; PR #191 manejo de eliminaciones en el changeset) → Fase 2 completa (`lib/faq/`, `/knowledge` editable, 2 bugs de calidad corregidos: contador stale, ruido de stopwords; PR #2 mergeado) → Fase 3 completa (`lib/voice/` + `/voice` + agente conversacional, cadena voz→CRM verificada con Playwright, 4 bugs corregidos conduciendo la conversación). Pendiente: commit/push Fase 3 (changeset a aprobar) → Fase 4.
