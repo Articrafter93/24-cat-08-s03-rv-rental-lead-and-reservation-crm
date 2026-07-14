@@ -1,9 +1,17 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { initVoiceState, greetingMessage } from "@/lib/voice/session";
 import { isSpeechRecognitionSupported, isSpeechSynthesisSupported, startListening, speak } from "@/lib/voice/speech";
+import {
+  evaluateGuard,
+  readGuardState,
+  writeGuardState,
+  isLocked,
+  formatRemainingLock,
+  type GuardState,
+} from "@/lib/voice/guard";
 import type { VoiceSessionState } from "@/lib/voice/types";
 
 interface DisplayMessage {
@@ -21,8 +29,20 @@ export function VoiceAgentPanel() {
   const [listening, setListening] = useState(false);
   const [sending, setSending] = useState(false);
   const [leadId, setLeadId] = useState<string | null>(null);
+  // Lazy init reads localStorage once. Safe for SSR/hydration: readGuardState
+  // returns the empty default when `window` is undefined, and every piece of UI
+  // derived from guardState/nowTick is gated behind `mounted` (false until after
+  // hydration), so the server and first client render produce identical DOM.
+  const [guardState, setGuardState] = useState<GuardState>(() => readGuardState());
+  const [nowTick, setNowTick] = useState<number>(() => Date.now());
   const sessionIdRef = useRef<string>(crypto.randomUUID());
   const stopListeningRef = useRef<(() => void) | null>(null);
+
+  // Tick every 30s so the lockout countdown stays live.
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick(Date.now()), 30000);
+    return () => window.clearInterval(id);
+  }, []);
 
   // Browser-capability detection must be deferred past hydration: on the server
   // `window` is undefined, so evaluating it during render would make the server
@@ -36,18 +56,38 @@ export function VoiceAgentPanel() {
   );
   const speechSupported = mounted && isSpeechRecognitionSupported();
   const ttsSupported = mounted && isSpeechSynthesisSupported();
+  const locked = mounted && isLocked(guardState, nowTick);
+  const lockRemaining =
+    locked && guardState.lockUntil ? formatRemainingLock(guardState.lockUntil - nowTick) : null;
 
   async function sendTurn(utterance: string, mode: "voice" | "chat") {
-    if (!utterance.trim() || state.done || sending) return;
+    const trimmed = utterance.trim();
+    if (!trimmed || state.done || sending) return;
+
+    // Anti-abuse guard (client-side, adapted from Natalia AI): stop clearly
+    // off-topic / troll input before spending a backend turn, with escalating
+    // friction and a persisted 24h lockout. Guard replies are display-only — they
+    // never enter `state`, so the FSM and the CRM transcript stay clean.
+    const recentUserTexts = messages.filter((m) => m.role === "user").slice(-5).map((m) => m.text);
+    const outcome = evaluateGuard(trimmed, recentUserTexts, guardState);
+    if (outcome.type !== "allow") {
+      setMessages((prev) => [...prev, { role: "user", text: trimmed }, { role: "agent", text: outcome.message }]);
+      setInputValue("");
+      setGuardState(outcome.state);
+      writeGuardState(outcome.state);
+      setNowTick(Date.now());
+      return;
+    }
+
     setSending(true);
-    setMessages((prev) => [...prev, { role: "user", text: utterance }]);
+    setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
     setInputValue("");
 
     try {
       const res = await fetch("/api/voice/turn", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: sessionIdRef.current, mode, utterance, state }),
+        body: JSON.stringify({ sessionId: sessionIdRef.current, mode, utterance: trimmed, state }),
       });
 
       if (!res.ok) {
@@ -120,6 +160,11 @@ export function VoiceAgentPanel() {
                 color: m.role === "user" ? "white" : "var(--color-neutral-950)",
               }}
             >
+              {/* Rendered as plain, React-escaped text — safe today because replies are
+                  deterministic (no injection surface). SECURITY GATE: if replies ever
+                  become model-generated (lib/voice/llm.ts) AND you switch to rich
+                  rendering (markdown/links), you MUST sanitize link schemes against an
+                  https:/tel:/mailto: allowlist first. See lib/voice/nlu.ts header. */}
               {m.text}
             </div>
           </div>
@@ -137,13 +182,22 @@ export function VoiceAgentPanel() {
         </div>
       )}
 
+      {locked && (
+        <div
+          className="rounded-xl p-3 text-sm font-medium"
+          style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C" }}
+        >
+          🚫 This demo chat is temporarily locked due to off-topic use. Time remaining: {lockRemaining}.
+        </div>
+      )}
+
       {/* Input row */}
       <form onSubmit={handleTextSubmit} className="flex gap-2">
         {speechSupported && (
           <button
             type="button"
             onClick={handleMicClick}
-            disabled={state.done}
+            disabled={state.done || locked}
             className="rounded-full w-11 h-11 flex-shrink-0 flex items-center justify-center text-lg transition-opacity disabled:opacity-50"
             style={{
               backgroundColor: listening ? "#DC2626" : "var(--color-brand-orange)",
@@ -157,14 +211,14 @@ export function VoiceAgentPanel() {
         <input
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          disabled={state.done || sending}
-          placeholder={speechSupported ? "Or type instead…" : "Type your message…"}
+          disabled={state.done || sending || locked}
+          placeholder={locked ? "Chat locked" : speechSupported ? "Or type instead…" : "Type your message…"}
           className="flex-1 rounded-lg px-3 py-2 text-sm outline-none disabled:opacity-60"
           style={{ border: "1px solid var(--color-neutral-200)" }}
         />
         <button
           type="submit"
-          disabled={state.done || sending || !inputValue.trim()}
+          disabled={state.done || sending || locked || !inputValue.trim()}
           className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           style={{ backgroundColor: "var(--color-brand-orange)" }}
         >
