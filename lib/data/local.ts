@@ -1,4 +1,5 @@
 import { randomUUID } from "crypto";
+import type { Prisma } from "@prisma/client";
 import { localStore } from "./local-store";
 import { classifyLead } from "@/lib/ai/classify";
 import { sendConfirmationEmail, sendInternalAlert, sendFollowUpEmail } from "@/lib/email/resend";
@@ -15,7 +16,7 @@ import type {
 } from "./types";
 
 export async function ingestLead(input: IngestLeadInput): Promise<IngestLeadResult> {
-  const { name, email, phone, message, source } = input;
+  const { name, email, phone, message, source, transcript, reservationDraft } = input;
   const now = new Date();
 
   let lead = localStore.leads.find((l) => l.externalId === input.externalId);
@@ -24,7 +25,7 @@ export async function ingestLead(input: IngestLeadInput): Promise<IngestLeadResu
       id: randomUUID(),
       externalId: input.externalId,
       source,
-      rawPayload: { name, email, phone, message },
+      rawPayload: { name, email, phone, message, transcript, reservationDraft } as Prisma.JsonValue,
       normalizedAt: now,
       createdAt: now,
     };
