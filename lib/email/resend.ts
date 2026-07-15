@@ -1,10 +1,18 @@
 import { Resend } from "resend";
 
-export const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazily construct the Resend client ONLY when an API key is present. The client
+// constructor throws "Missing API key" when the key is undefined, which crashes
+// module evaluation — and the Next.js production build's page-data collection —
+// for every route that imports this file (observed: Vercel build failed on
+// /api/alerts/[id]/seen). In this portfolio demo email is optional: without a key
+// the send helpers no-op so lead capture / pipeline still work end to end.
+const apiKey = process.env.RESEND_API_KEY;
+export const resend = apiKey ? new Resend(apiKey) : null;
 
 export const FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "noreply@rvcorp-demo.com";
 
 export async function sendConfirmationEmail(to: string, name: string) {
+  if (!resend) return null;
   return resend.emails.send({
     from: FROM_EMAIL,
     to,
@@ -19,6 +27,7 @@ export async function sendFollowUpEmail(
   subject: string,
   body: string
 ) {
+  if (!resend) return null;
   return resend.emails.send({
     from: FROM_EMAIL,
     to,
@@ -33,6 +42,7 @@ export async function sendInternalAlert(
   leadType: string,
   leadId: string
 ) {
+  if (!resend) return null;
   return resend.emails.send({
     from: FROM_EMAIL,
     to,
