@@ -1,0 +1,29 @@
+# Node build artifacts
+node_modules/
+coverage/
+.next/cache/
+
+# Internal process docs (not recruiter-facing, not served) — kept out of the deploy
+comunicacion-cliente/
+docs/
+reports/
+BRIEF.md
+PLAN.md
+QUE-FALTA.md
+CLASIFICACION-ACTIVO.md
+CLASIFICACION-ACTIVO*.md
+DIRECCION-VISUAL.md
+INSPECCION-VISUAL.md
+REVISION-RECLUTADOR.md
+VERIFICACION-FUNCIONAL-HUMANA.md
+SEGOP.md
+LESSONS.md
+BECOME-PORTFOLIO.md
+00-ARQUITECTURA-PROYECTO.md
+SELLO DE APROBACION*.md
+
+# Secrets / local / VCS
+.env*
+.git/
+.playwright-mcp/
+*.log

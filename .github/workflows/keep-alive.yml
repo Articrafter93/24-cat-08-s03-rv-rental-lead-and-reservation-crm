@@ -8,6 +8,11 @@
 #   - KEEPALIVE_DATABASE_URL_B (optional) -> portafolio-45-project-b (skipped if unset)
 # Set them in repo Settings -> Secrets and variables -> Actions.
 #
+# SECURITY: psql prints the connection string in its error output on failure, and
+# GitHub only masks EXACT secret matches (a percent-decoded fragment is NOT masked).
+# So psql stdout/stderr is suppressed and only a generic message is emitted -> the
+# connection string can never leak into the run log, regardless of the password.
+#
 # HONEST LIMIT: GitHub disables scheduled workflows after 60 days of *repository*
 # inactivity (scheduled runs themselves do NOT count as activity). If this repo
 # sits fully idle for 60+ days the cron is auto-disabled and the DBs can pause.
@@ -33,8 +38,12 @@ jobs:
             echo "::error::KEEPALIVE_DATABASE_URL is not set - project-a will pause after ~7 days idle."
             exit 1
           fi
-          psql "$URL" -tAc "select 1;"
-          echo "project-a keep-alive OK."
+          if psql "$URL" -tAc "select 1;" >/dev/null 2>&1; then
+            echo "project-a keep-alive OK."
+          else
+            echo "::error::project-a keep-alive FAILED (connection error). Detail suppressed to avoid leaking the connection string; verify the KEEPALIVE_DATABASE_URL secret is a valid, URI-encoded Postgres URL."
+            exit 1
+          fi
 
       - name: Ping project-b (optional)
         env:
@@ -44,5 +53,9 @@ jobs:
             echo "KEEPALIVE_DATABASE_URL_B not set - skipping project-b."
             exit 0
           fi
-          psql "$URL" -tAc "select 1;"
-          echo "project-b keep-alive OK."
+          if psql "$URL" -tAc "select 1;" >/dev/null 2>&1; then
+            echo "project-b keep-alive OK."
+          else
+            echo "::error::project-b keep-alive FAILED (connection error). Detail suppressed to avoid leaking the connection string; verify the KEEPALIVE_DATABASE_URL_B secret is a valid, URI-encoded Postgres URL."
+            exit 1
+          fi
