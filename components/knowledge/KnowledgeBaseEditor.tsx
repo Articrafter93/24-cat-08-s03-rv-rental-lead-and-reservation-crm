@@ -97,6 +97,15 @@ export function KnowledgeBaseEditor({ initialEntries }: { initialEntries: FaqEnt
         engineering required.
       </p>
 
+      <div className="rounded-xl p-4" style={{ backgroundColor: "var(--color-neutral-50)", border: "1px solid var(--color-neutral-100)" }}>
+        <p className="text-xs" style={{ color: "var(--color-neutral-400)" }}>
+          <span className="font-medium" style={{ color: "var(--color-neutral-700)" }}>Demo sandbox.</span>{" "}
+          Edits here are seeded per session and reset on redeploy — the demo runs on stateless serverless functions, so
+          the knowledge base is not shared storage. In production this is a persistent database; captured leads
+          (Pipeline, Dashboard) do persist across sessions in this demo.
+        </p>
+      </div>
+
       {error && (
         <div className="rounded-xl p-4" style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA" }}>
           <p className="text-sm font-medium" style={{ color: "#DC2626" }}>{error}</p>

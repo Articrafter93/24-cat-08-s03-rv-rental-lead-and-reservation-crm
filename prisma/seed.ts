@@ -8,32 +8,32 @@ async function main() {
     prisma.pipelineStage.upsert({
       where: { id: "stage-nuevo" },
       update: {},
-      create: { id: "stage-nuevo", name: "Nuevo", order: 1, color: "#5C7A3E" },
+      create: { id: "stage-nuevo", name: "New", order: 1, color: "#5C7A3E" },
     }),
     prisma.pipelineStage.upsert({
       where: { id: "stage-calificando" },
       update: {},
-      create: { id: "stage-calificando", name: "Calificando", order: 2, color: "#CA8A04" },
+      create: { id: "stage-calificando", name: "Qualifying", order: 2, color: "#CA8A04" },
     }),
     prisma.pipelineStage.upsert({
       where: { id: "stage-propuesta" },
       update: {},
-      create: { id: "stage-propuesta", name: "Propuesta", order: 3, color: "#2563EB" },
+      create: { id: "stage-propuesta", name: "Proposal", order: 3, color: "#2563EB" },
     }),
     prisma.pipelineStage.upsert({
       where: { id: "stage-negociando" },
       update: {},
-      create: { id: "stage-negociando", name: "Negociando", order: 4, color: "#EA580C" },
+      create: { id: "stage-negociando", name: "Negotiating", order: 4, color: "#EA580C" },
     }),
     prisma.pipelineStage.upsert({
       where: { id: "stage-cerrado" },
       update: {},
-      create: { id: "stage-cerrado", name: "Cerrado ✓", order: 5, color: "#2D5016" },
+      create: { id: "stage-cerrado", name: "Closed ✓", order: 5, color: "#2D5016" },
     }),
     prisma.pipelineStage.upsert({
       where: { id: "stage-perdido" },
       update: {},
-      create: { id: "stage-perdido", name: "Perdido", order: 6, color: "#6B7280" },
+      create: { id: "stage-perdido", name: "Lost", order: 6, color: "#6B7280" },
     }),
   ]);
 
