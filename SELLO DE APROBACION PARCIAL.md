@@ -1,9 +1,10 @@
 # SELLO DE APROBACION PARCIAL
 
 **Proyecto:** 24 - CAT-08-S03 - RV Rental Lead and Reservation CRM
-**Fecha de emision:** 2026-07-14
+**Fecha de emision:** 2026-07-14 (v1) · **re-emitido 2026-07-14 tras v2a** (capa LLM opcional)
 **Version normativa:** neuronas-v2
 **Estado:** vigente
+**Alcance de código:** v2a — agente determinista + capa LLM opcional Gemini (fallback-safe)
 
 ---
 
@@ -11,12 +12,12 @@
 
 | Verificacion | Estado | Evidencia | Fecha |
 |---|---|---|---|
-| Cliente Exigente Modo B | `EXITO TOTAL` | `comunicacion-cliente/2026-07-14-03-revision-cliente-exigente.md` | 2026-07-14 |
-| Revision Final (GATE 9) | `PR_APPROVED` / `WF-011 PASS` | `docs/GATE9_Revision_Reporte.md` | 2026-07-14 |
+| Cliente Exigente Modo B | `EXITO TOTAL` | `comunicacion-cliente/2026-07-14-05-revision-cliente-exigente.md` (v2a) | 2026-07-14 |
+| Revision Final (GATE 9) | `PR_APPROVED` / `WF-011 PASS` | `docs/GATE9_Revision_Reporte.md` (re-audit v2a) | 2026-07-14 |
 | Direccion visual clara | `SI` | `DIRECCION-VISUAL.md` | 2026-07-14 |
 | Inspeccion visual Playwright | `SI` | `INSPECCION-VISUAL.md` | 2026-07-14 |
-| Reclutador exigente (portafolio) | `APTO_PORTAFOLIO` | `REVISION-RECLUTADOR.md` | 2026-07-14 |
-| Verificacion Funcional Humana | `SI` (confirmacion literal del developer) | `VERIFICACION-FUNCIONAL-HUMANA.md` | 2026-07-14 |
+| Reclutador exigente (portafolio) | `APTO_PORTAFOLIO` | `REVISION-RECLUTADOR.md` (41 tests) | 2026-07-14 |
+| Verificacion Funcional Humana | `SI` (confirmacion literal del developer, v1 + v2a) | `VERIFICACION-FUNCIONAL-HUMANA.md` | 2026-07-14 |
 
 ---
 
@@ -41,11 +42,11 @@ Este sello acredita aprobacion **parcial** del proyecto (versión v1 determinist
 
 **No** equivale a un sello de aprobacion final. El sello FINAL (`vrc`) requiere ademas deploy verificado sobre la URL desplegada — y **resolver la persistencia serverless** (el store `local` in-memory no sobrevive a serverless; ver `00-ARQUITECTURA-PROYECTO.md`, capa *Database y storage*), mas la 2.ª VFH sobre la URL.
 
-### Desviaciones registradas (Nota de Cambio 02)
+### Desviaciones registradas (Notas de Cambio 02 y 04)
 
-- Cambio 1: capa LLM diferida a v2 (agente determinista en v1) — aprobado por el developer.
-- Cambio 2: cambio de etapa por dropdown en vez de drag-drop — aprobado por el developer.
-- Cambio 3: campo "destino/tipo de viaje" diferido a v2 — juzgado por cliente-exigente, fuera de la lista §6.
+- Cambio 1 (Nota 02): capa LLM diferida a v2 → **cerrado parcialmente en v2a** (Nota 04): capa LLM opcional de extracción activa; generación conversacional completa diferida a v2b.
+- Cambio 2 (Nota 02): cambio de etapa por dropdown en vez de drag-drop — aprobado por el developer.
+- Cambio 3 (Nota 02): campo "destino/tipo de viaje" → **cerrado en v2a** (Nota 04): capturado vía LLM.
 
 ---
 

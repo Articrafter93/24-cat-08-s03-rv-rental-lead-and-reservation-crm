@@ -3,9 +3,11 @@
 > Gate de destreza técnica demostrable (portafolio). Hard blocker de la 6.ª condición del `SELLO DE APROBACIÓN PARCIAL`.
 > **Fecha:** 2026-07-14 · **Puesto objetivo:** AI Automation & Voice Agent Specialist
 
-**Resultado: APTO_PORTAFOLIO**
+**Resultado: APTO_PORTAFOLIO** (v1 + re-evaluación delta v2a)
 
-> Rechazo inicial (`NO_APTO_PORTAFOLIO`) por ausencia de tests; **resuelto en la misma sesión** con una suite de 32 tests de comportamiento. Delta re-evaluación de la Capa 2.
+> Rechazo inicial (`NO_APTO_PORTAFOLIO`) por ausencia de tests; **resuelto en la misma sesión** con una suite de tests de comportamiento. Delta re-evaluación de la Capa 2.
+>
+> **Delta v2a (capa LLM):** la suite creció a **41 tests** — `llm.test.ts` (9) cubre el fallback sin key (regresión-cero) y la **validación de salida del modelo** (un `faqId` inventado se rechaza, no se confía a ciegas), demostrando manejo seguro de LLM — destreza central para el puesto. Sin `console.log`/debug (logs temporales de diagnóstico removidos), sin TODO/FIXME. La capa LLM se probó end-to-end en vivo (paraphrase + destino). Capas 1/3/4 se mantienen PASS.
 
 Aplicabilidad: **APLICA** (portafolio candidato, `ficticio`, slot CAT-08-S03).
 

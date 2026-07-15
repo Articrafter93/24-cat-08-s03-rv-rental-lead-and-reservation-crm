@@ -23,6 +23,11 @@ export interface VoiceTurnTelemetry {
   turnCount: number;
   /** Length of the caller's utterance — a count only, never the text itself. */
   utteranceChars: number;
+  /** Which path answered an FAQ-shaped turn: deterministic keyword search, the LLM
+   * semantic-match rescue, or unresolved (LLM off/failed). Not PII. */
+  faqPath: "deterministic" | "llm" | "unresolved";
+  /** Whether the optional LLM enhancement layer was invoked this turn (cost signal). */
+  llmUsed: boolean;
 }
 
 export function logVoiceTurn(entry: VoiceTurnTelemetry): void {
