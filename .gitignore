@@ -47,3 +47,20 @@ next-env.d.ts
 
 # local dev-server launch config (workspace root .claude/launch.json is canonical)
 .claude/
+
+# Andamiaje interno (excluido del repo publico) — publish-portfolio-project
+comunicacion-cliente
+BRIEF.md
+PLAN.md
+QUE-FALTA.md
+CLASIFICACION-ACTIVO.md
+DIRECCION-VISUAL.md
+INSPECCION-VISUAL.md
+00-ARQUITECTURA-PROYECTO.md
+docs/GATE9_Revision_Reporte.md
+SELLO DE APROBACION PARCIAL.md
+SELLO DE APROBACION FINAL.md
+VERIFICACION-FUNCIONAL-HUMANA.md
+REVISION-RECLUTADOR.md
+BECOME-PORTFOLIO.md
+reports
