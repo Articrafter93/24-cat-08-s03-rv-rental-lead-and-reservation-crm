@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { processTurn, buildFinalizeInput } from "@/lib/voice/agent";
 import { detectBookingIntent, detectEscalation } from "@/lib/voice/nlu";
-import { matchFaqSemantically, extractDestination } from "@/lib/voice/llm";
+import { matchFaqSemantically, extractDestination, naturalizeFaqAnswer } from "@/lib/voice/llm";
 import { searchFAQ } from "@/lib/faq/search";
 import { faqStore } from "@/lib/faq/store";
+import type { FaqEntry } from "@/lib/faq/types";
 import { initVoiceState } from "@/lib/voice/session";
 import { ingestLead } from "@/lib/data";
 import { logVoiceTurn } from "@/lib/voice/telemetry";
@@ -83,6 +84,11 @@ export async function POST(request: NextRequest) {
   let agentReply = turnReply;
   let faqPath: "deterministic" | "llm" | "unresolved" = "deterministic";
   let llmUsed = false;
+  let toneRewritten = false;
+  // Tracks the FAQ store entry that answered this turn (deterministic keyword match
+  // OR the v2a semantic-match override) so v2b can attempt tone naturalization on
+  // its `.answer` afterward — without duplicating the FAQ-answer detection logic.
+  let answeredFaqEntry: FaqEntry | null = null;
 
   // (1) Passive destination enrichment during a booking — purely additive.
   if (
@@ -118,13 +124,36 @@ export async function POST(request: NextRequest) {
         nextState.failedRecognitionCount = 0;
         faqPath = "llm";
         llmUsed = true;
+        answeredFaqEntry = entry;
         // Keep the transcript coherent: replace whatever the FSM appended.
         const lastTurn = nextState.turns[nextState.turns.length - 1];
         if (lastTurn && lastTurn.role === "agent") lastTurn.text = agentReply;
       }
-    } else if (searchFAQ(utterance).length === 0) {
-      // No deterministic hit and the LLM was off/unsure — genuinely unresolved.
-      faqPath = "unresolved";
+    } else {
+      // No semantic override — check whether the deterministic engine (inside
+      // processTurn) already answered via its own keyword search, so v2b can
+      // naturalize ITS answer too. Mirrors agent.ts's own searchFAQ(utterance, 1) call.
+      const deterministicHit = searchFAQ(utterance, 1)[0];
+      if (deterministicHit) {
+        answeredFaqEntry = deterministicHit;
+      } else {
+        // No deterministic hit and the LLM was off/unsure — genuinely unresolved.
+        faqPath = "unresolved";
+      }
+    }
+  }
+
+  // (3) v2b — tone naturalization of whichever FAQ entry answered this turn. Never
+  // touches booking/escalation replies (those never set `answeredFaqEntry`). The
+  // fixed closing suffix is re-appended by CODE, not passed through the model.
+  if (answeredFaqEntry) {
+    const reworded = await naturalizeFaqAnswer(utterance, answeredFaqEntry.answer);
+    if (reworded) {
+      agentReply = `${reworded} Is there anything else I can help with, or would you like to check availability for a trip?`;
+      toneRewritten = true;
+      llmUsed = true;
+      const lastTurn = nextState.turns[nextState.turns.length - 1];
+      if (lastTurn && lastTurn.role === "agent") lastTurn.text = agentReply;
     }
   }
 
@@ -170,6 +199,7 @@ export async function POST(request: NextRequest) {
     utteranceChars: utterance.length,
     faqPath,
     llmUsed,
+    toneRewritten,
   });
 
   const res = NextResponse.json({ state: nextState, agentReply, leadId: leadId ?? null });

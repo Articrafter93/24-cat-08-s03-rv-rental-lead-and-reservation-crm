@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { matchFaqSemantically, extractDestination } from "./llm";
+import { matchFaqSemantically, extractDestination, naturalizeFaqAnswer } from "./llm";
 import type { FaqEntry } from "@/lib/faq/types";
 
 // Controllable stub for the Gemini SDK so we can test the parsing/validation logic
@@ -41,6 +41,11 @@ describe("llm layer — fallback-safe without an API key", () => {
     process.env.GEMINI_API_KEY = "test-key";
     expect(await matchFaqSemantically("anything", [])).toBeNull();
   });
+
+  it("naturalizeFaqAnswer returns null when GEMINI_API_KEY is absent (verbatim fallback)", async () => {
+    const result = await naturalizeFaqAnswer("do you allow pets", "Yes, pets are welcome for a $75 fee.");
+    expect(result).toBeNull();
+  });
 });
 
 // With a key set, the model output is treated as an untrusted CANDIDATE and validated
@@ -78,5 +83,50 @@ describe("llm layer — output validation (model output is data, not a command)"
   it("returns null when no destination is mentioned", async () => {
     mock.responseText = JSON.stringify({ destination: null });
     expect(await extractDestination("just checking prices")).toBeNull();
+  });
+});
+
+// v2b: tone rewording must NEVER change a fact. This is the mechanical guarantee —
+// not a prompt instruction — that the LLM can vary wording but never a number.
+describe("naturalizeFaqAnswer — numeric fact-integrity gate (v2b)", () => {
+  const original = "Yes, pets are welcome in most of our fleet for a $75 pet fee per trip.";
+
+  beforeEach(() => {
+    process.env.GEMINI_API_KEY = "test-key";
+  });
+
+  it("accepts a rewording that preserves the exact figure", async () => {
+    mock.responseText = JSON.stringify({
+      answer: "Absolutely — your furry companion is welcome for a $75 fee each trip!",
+    });
+    expect(await naturalizeFaqAnswer("can my dog come", original)).toBe(
+      "Absolutely — your furry companion is welcome for a $75 fee each trip!"
+    );
+  });
+
+  it("REJECTS a rewording that changes the figure", async () => {
+    mock.responseText = JSON.stringify({
+      answer: "Absolutely — your furry companion is welcome for a $50 fee each trip!",
+    });
+    expect(await naturalizeFaqAnswer("can my dog come", original)).toBeNull();
+  });
+
+  it("REJECTS a rewording that drops the figure entirely", async () => {
+    mock.responseText = JSON.stringify({
+      answer: "Absolutely — your furry companion is welcome to come along!",
+    });
+    expect(await naturalizeFaqAnswer("can my dog come", original)).toBeNull();
+  });
+
+  it("REJECTS a rewording that invents an additional figure", async () => {
+    mock.responseText = JSON.stringify({
+      answer: "Yes, pets are welcome for a $75 fee, plus a $20 cleaning surcharge.",
+    });
+    expect(await naturalizeFaqAnswer("can my dog come", original)).toBeNull();
+  });
+
+  it("survives malformed model output without throwing", async () => {
+    mock.responseText = "not json";
+    expect(await naturalizeFaqAnswer("can my dog come", original)).toBeNull();
   });
 });
