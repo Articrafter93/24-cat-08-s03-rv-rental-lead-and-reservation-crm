@@ -1,35 +1,38 @@
-# Keep-alive for the pooled Supabase free-tier projects. Supabase free projects
-# pause after ~7 days idle, which would leave the deployed demo unable to create
-# leads. A trivial ~3-day query resets the idle timer. psql is preinstalled on
-# GitHub-hosted ubuntu runners.
+# Keep-alive for the pooled Supabase free-tier projects (portafolio-45-project-a/b).
+# Supabase free projects pause after ~7 days idle -> a ~3-day query resets the timer.
+# psql is preinstalled on GitHub-hosted ubuntu runners.
 #
-# Covers BOTH shared portfolio pooling projects so neither falls asleep:
-#   - KEEPALIVE_DATABASE_URL   (required) -> portafolio-45-project-a (schema rv_crm lives here)
-#   - KEEPALIVE_DATABASE_URL_B (optional) -> portafolio-45-project-b (skipped if unset)
+#   - KEEPALIVE_DATABASE_URL   (required) -> project-a (schema rv_crm lives here)
+#   - KEEPALIVE_DATABASE_URL_B (optional) -> project-b (skipped if unset)
 # Set them in repo Settings -> Secrets and variables -> Actions.
 #
-# SECURITY: psql prints the connection string in its error output on failure, and
-# GitHub only masks EXACT secret matches (a percent-decoded fragment is NOT masked).
-# So psql stdout/stderr is suppressed and only a generic message is emitted -> the
-# connection string can never leak into the run log, regardless of the password.
+# SECURITY (db-ficticio rule 2d): psql prints the connection string on error and GitHub
+# only masks EXACT secret matches (a percent-decoded fragment is NOT masked). psql
+# stdout/stderr is suppressed and only a generic message is emitted -> the connection
+# string (which carries the DB password) can never leak into the run log.
 #
-# HONEST LIMIT: GitHub disables scheduled workflows after 60 days of *repository*
-# inactivity (scheduled runs themselves do NOT count as activity). If this repo
-# sits fully idle for 60+ days the cron is auto-disabled and the DBs can pause.
-# Mitigation: push a commit or run this workflow manually (workflow_dispatch) at
-# least every ~50 days, or move the ping to an external scheduler.
+# BLINDAJE (db-ficticio rule 2b) — so the keep-alive doesn't die silently:
+#   - Heartbeat commit on EVERY run (if: always()) resets GitHub's 60-day auto-disable of
+#     scheduled workflows (only commits count as activity). It targets a dedicated
+#     `keepalive` branch (NOT main) so this recruiter-facing repo's main history stays clean.
+#   - Issue-on-failure (if: failure(), idempotent by label) makes a red run VISIBLE.
 name: keep-alive
 
 on:
   schedule:
-    # Every 3 days at 06:17 UTC - comfortably inside the ~7-day idle window.
     - cron: "17 6 */3 * *"
   workflow_dispatch: {}
+
+permissions:
+  contents: write   # heartbeat commit to the keepalive branch
+  issues: write     # open an issue when a ping fails
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Ping project-a (required)
         env:
           URL: ${{ secrets.KEEPALIVE_DATABASE_URL }}
@@ -46,6 +49,7 @@ jobs:
           fi
 
       - name: Ping project-b (optional)
+        if: always()
         env:
           URL: ${{ secrets.KEEPALIVE_DATABASE_URL_B }}
         run: |
@@ -58,4 +62,29 @@ jobs:
           else
             echo "::error::project-b keep-alive FAILED (connection error). Detail suppressed to avoid leaking the connection string; verify the KEEPALIVE_DATABASE_URL_B secret is a valid, URI-encoded Postgres URL."
             exit 1
+          fi
+
+      - name: Heartbeat (resets GitHub 60-day auto-disable; keepalive branch keeps main clean)
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B keepalive
+          date -u +"%Y-%m-%dT%H:%M:%SZ" > last-keepalive.txt
+          git add last-keepalive.txt
+          git commit -m "chore(keep-alive): heartbeat $(date -u +%Y-%m-%d)" || { echo "no change to commit"; exit 0; }
+          git push -f origin keepalive
+
+      - name: Open issue on failure (idempotent)
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh label create keepalive-failure --color FBCA04 --description "Keep-alive workflow failure" 2>/dev/null || true
+          open=$(gh issue list --label keepalive-failure --state open --json number --jq 'length' 2>/dev/null || echo 0)
+          if [ "$open" = "0" ]; then
+            gh issue create --title "Keep-alive failed — demo DB may pause" --label keepalive-failure \
+              --body "The scheduled keep-alive workflow failed. Check the latest run and confirm both pooled Supabase projects are ACTIVE_HEALTHY. If a secret's connection string is invalid, rotate/fix it (URI-safe password)."
+          else
+            echo "keepalive-failure issue already open; not duplicating."
           fi
