@@ -4,7 +4,18 @@
 **Fecha:** 2026-07-14 (cierre v1 + re-auditoría v2a el mismo día)
 **Ejecutor:** revision-final (delta audits de la misma sesión)
 
-## Re-auditoría delta v2a (capa LLM opcional)
+## Re-auditoría delta v2b (naturalización de tono + fix searchFAQ)
+
+Cambios: `lib/voice/llm.ts` (`naturalizeFaqAnswer` + validación de integridad numérica), `app/api/voice/turn/route.ts` (3er punto de integración), `lib/voice/telemetry.ts` (`toneRewritten`), `lib/faq/search.ts` (fix colisión de keywords), tests nuevos. `agent.ts` (FSM + strings deterministas de booking/escalación) **sin tocar**.
+
+- **Cero tolerancia:** 51 tests verdes (47 previos + 4 regresión `searchFAQ`), tsc 0, eslint 0, `next build` exit 0. ✅
+- **CAT-02 extendido:** salida de generación libre (reformulación) acotada por **validación mecánica de integridad numérica** (todo número del original debe sobrevivir exacto o se rechaza) — no solo id-contra-store. Verificado en vivo (rechazo → verbatim). ✅
+- **No-negociable del contrato preservado:** confirmación de booking y mensajes de escalación **verbatim** (verificados en vivo); v2b nunca los toca. ✅
+- **C7:** sigue diferido con seguridad (store sin markdown, render texto plano). ✅
+- **VFH v2b:** aprobada por el developer. ✅
+- **Veredicto v2b:** `PR_APPROVED`. Sello se re-emite.
+
+
 
 Cambios auditados: `lib/voice/llm.ts`, `app/api/voice/turn/route.ts`, `lib/voice/telemetry.ts`, `.env.example`, tests `llm.test.ts`. `processTurn` (FSM) sin tocar.
 

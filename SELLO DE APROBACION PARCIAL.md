@@ -1,10 +1,10 @@
 # SELLO DE APROBACION PARCIAL
 
 **Proyecto:** 24 - CAT-08-S03 - RV Rental Lead and Reservation CRM
-**Fecha de emision:** 2026-07-14 (v1) · **re-emitido 2026-07-14 tras v2a** (capa LLM opcional)
+**Fecha de emision:** 2026-07-14 (v1/v2a) · **re-emitido 2026-07-15 tras v2b**
 **Version normativa:** neuronas-v2
 **Estado:** vigente
-**Alcance de código:** v2a — agente determinista + capa LLM opcional Gemini (fallback-safe)
+**Alcance de código:** v2b — agente determinista + capa LLM opcional Gemini (extracción v2a + naturalización de tono acotada v2b, fallback-safe) + fix de precisión `searchFAQ`. Booking/escalación permanecen deterministas verbatim.
 
 ---
 
@@ -12,12 +12,12 @@
 
 | Verificacion | Estado | Evidencia | Fecha |
 |---|---|---|---|
-| Cliente Exigente Modo B | `EXITO TOTAL` | `comunicacion-cliente/2026-07-14-05-revision-cliente-exigente.md` (v2a) | 2026-07-14 |
-| Revision Final (GATE 9) | `PR_APPROVED` / `WF-011 PASS` | `docs/GATE9_Revision_Reporte.md` (re-audit v2a) | 2026-07-14 |
+| Cliente Exigente Modo B | `EXITO TOTAL` | `comunicacion-cliente/2026-07-15-07-revision-cliente-exigente.md` (v2b) | 2026-07-15 |
+| Revision Final (GATE 9) | `PR_APPROVED` / `WF-011 PASS` | `docs/GATE9_Revision_Reporte.md` (re-audit v2b) | 2026-07-15 |
 | Direccion visual clara | `SI` | `DIRECCION-VISUAL.md` | 2026-07-14 |
 | Inspeccion visual Playwright | `SI` | `INSPECCION-VISUAL.md` | 2026-07-14 |
-| Reclutador exigente (portafolio) | `APTO_PORTAFOLIO` | `REVISION-RECLUTADOR.md` (41 tests) | 2026-07-14 |
-| Verificacion Funcional Humana | `SI` (confirmacion literal del developer, v1 + v2a) | `VERIFICACION-FUNCIONAL-HUMANA.md` | 2026-07-14 |
+| Reclutador exigente (portafolio) | `APTO_PORTAFOLIO` | `REVISION-RECLUTADOR.md` (51 tests) | 2026-07-15 |
+| Verificacion Funcional Humana | `SI` (confirmacion literal del developer, v1 + v2a + v2b) | `VERIFICACION-FUNCIONAL-HUMANA.md` | 2026-07-15 |
 
 ---
 

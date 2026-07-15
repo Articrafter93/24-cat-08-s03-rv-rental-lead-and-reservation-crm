@@ -3,7 +3,10 @@
 > Gate de destreza técnica demostrable (portafolio). Hard blocker de la 6.ª condición del `SELLO DE APROBACIÓN PARCIAL`.
 > **Fecha:** 2026-07-14 · **Puesto objetivo:** AI Automation & Voice Agent Specialist
 
-**Resultado: APTO_PORTAFOLIO** (v1 + re-evaluación delta v2a)
+**Resultado: APTO_PORTAFOLIO** (v1 + delta v2a + delta v2b + fix searchFAQ)
+
+> **Delta v2b + searchFAQ:** suite a **51 tests** (+4 regresión de `searchFAQ` para la colisión de keywords, +6 de v2b para la integridad numérica de la reformulación). El fix de `searchFAQ` (keyword dominante + tolerancia a plural) y la validación mecánica de "un número nunca se altera en la reformulación" demuestran manejo riguroso de LLM + retrieval — destreza central del puesto. Sin debug/TODO. Capas 1/3/4 se mantienen PASS.
+
 
 > Rechazo inicial (`NO_APTO_PORTAFOLIO`) por ausencia de tests; **resuelto en la misma sesión** con una suite de tests de comportamiento. Delta re-evaluación de la Capa 2.
 >

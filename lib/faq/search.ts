@@ -9,13 +9,33 @@ const STOPWORDS = new Set([
   "in", "on", "at", "an", "my", "me", "we", "us", "our", "have", "has", "had",
 ]);
 
+// A curated keyword hit is a strong topical signal; generic word-overlap with a
+// question is a weak tiebreaker. KEYWORD_WEIGHT must dominate so a real keyword
+// match can never be outscored by a pile of generic overlaps (e.g. "trip" pulling
+// a pet question toward the damage entry).
+const KEYWORD_WEIGHT = 10;
+const WORD_OVERLAP_WEIGHT = 1;
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function wordBoundaryMatch(haystack: string, word: string): boolean {
-  return new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`).test(haystack);
+  return new RegExp(`\\b${escapeRegExp(word)}\\b`).test(haystack);
+}
+
+// Keyword match tolerant of a simple plural: a singular keyword ("pet") must still
+// match a plural query ("pets"). Without this, the strongest signal is silently
+// lost — the exact bug where "do you allow pets on the trip" matched the damage
+// entry instead of the pet-policy entry.
+function keywordMatch(haystack: string, keyword: string): boolean {
+  return new RegExp(`\\b${escapeRegExp(keyword)}s?\\b`).test(haystack);
 }
 
 // Deterministic keyword-overlap retrieval — no external API dependency, so
 // FAQ lookup never fails in a live demo. The voice/chat agent (Fase 3) calls
-// this before falling back to an LLM for open-ended phrasing.
+// this; lib/voice/llm.ts's matchFaqSemantically re-judges open-ended phrasing on
+// top of it, but this layer must be right on its own whenever a keyword is present.
 export function searchFAQ(query: string, topK = 3): FaqEntry[] {
   const normalizedQuery = query.toLowerCase();
   const queryWords = normalizedQuery
@@ -25,13 +45,13 @@ export function searchFAQ(query: string, topK = 3): FaqEntry[] {
   const scored = faqStore.map((entry) => {
     let score = 0;
     for (const keyword of entry.keywords) {
-      if (wordBoundaryMatch(normalizedQuery, keyword.toLowerCase())) score += 3;
+      if (keywordMatch(normalizedQuery, keyword.toLowerCase())) score += KEYWORD_WEIGHT;
     }
     const questionLower = entry.question.toLowerCase();
     const categoryLower = entry.category.toLowerCase();
     for (const word of queryWords) {
-      if (wordBoundaryMatch(questionLower, word)) score += 1;
-      if (wordBoundaryMatch(categoryLower, word)) score += 1;
+      if (wordBoundaryMatch(questionLower, word)) score += WORD_OVERLAP_WEIGHT;
+      if (wordBoundaryMatch(categoryLower, word)) score += WORD_OVERLAP_WEIGHT;
     }
     return { entry, score };
   });

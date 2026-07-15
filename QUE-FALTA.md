@@ -6,8 +6,8 @@
 
 ## Estado actual
 
-- **Playbook phase:** `v2a RE-SELLADA` (2026-07-14). Capa LLM opcional (Gemini `gemini-flash-latest`, free tier) verificada en vivo (FAQ parafraseada + destino) + fallback determinista por tests. Re-sello parcial emitido: revision-final PR_APPROVED (WF-011 + CAT-02) + cliente-exigente B EXITO TOTAL + reclutador APTO (41 tests) + VFH v2a firmada.
-- **Next action:** `gh` commit del changeset v2a. Luego cierre FINAL (tarea #12): resolver **persistencia serverless** (store `local` no sobrevive serverless) → `vrc` deploy → 2.ª VFH sobre URL → SELLO FINAL → `add-to-portfolio`. En el deploy, la key de Gemini va como secret del repo (server-side) para el camino LLM en vivo. **v2b** (generación conversacional LLM completa, activa gate C7 de sanitización de enlaces) = Plan Mode aparte.
+- **Playbook phase:** `v2b RE-SELLADA` (2026-07-15). Naturalización de tono acotada (LLM reformula FAQ preservando cifras exactas; booking/escalación siguen deterministas verbatim) + fix de colisión de keywords en `searchFAQ`. Verificado en vivo + 51 tests. Re-sello parcial emitido (revision-final PR_APPROVED, cliente-exigente B EXITO TOTAL, reclutador APTO, VFH v2b firmada).
+- **Next action:** `gh` commit del changeset v2b+searchFAQ. Luego cierre FINAL (tarea #12): resolver **persistencia serverless** (store `local` no sobrevive serverless) → `vrc` deploy → 2.ª VFH sobre URL → SELLO FINAL → `add-to-portfolio`. La key de Gemini va como secret del repo en el deploy. **v2c** (generación conversacional 100% libre) requeriría decisión explícita del developer sobre relajar el no-negociable §1 — no planeado.
 - **Clasificación:** `CAT-08` CRM/RevOps — `ficticio` candidato de portafolio (slot CAT-08-S03) — `renderizable: SÍ` — `idioma_render: en`.
 - **Última sesión:** 2026-07-14.
 - **Carpeta:** `24 - CAT-08-S03 - RV Rental Lead and Reservation CRM` (renombrada desde "...Lead & Reservation..." — el `&` rompía `cmd.exe` en scripts npm de Windows).

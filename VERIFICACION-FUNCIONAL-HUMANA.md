@@ -2,7 +2,7 @@
 
 > Hard blocker del `SELLO DE APROBACIÓN PARCIAL`. Solo la confirmación literal del developer en el chat aprueba. No se autoemite.
 
-**Estado: APROBADA POR EL DEVELOPER (2026-07-14) — v1 + addendum v2a (ver abajo)**
+**Estado: APROBADA POR EL DEVELOPER (2026-07-14) — v1 + addendum v2a + addendum v2b (ver abajo)**
 
 ## Addendum v2a — capa LLM opcional (VFH nueva, aprobada 2026-07-14)
 
@@ -17,6 +17,25 @@ Conducida con Playwright sobre el dev server local (:3100) con `GEMINI_API_KEY` 
 **Bugs encontrados y corregidos conduciendo la VFH v2a** (diagnosticados con telemetría/logs, no adivinando): (1) gating equivocado — el LLM nunca disparaba porque el keyword-search da falsos positivos con palabras comunes; corregido a arbitraje en todo turno tipo-pregunta. (2) `gemini-2.5-flash` retirado para keys nuevas (404, tragado por el catch); corregido a `gemini-flash-latest`.
 
 **Confirmación literal del developer (v2a):** _"confirmo"_ (2026-07-14), tras observar la evidencia de ambos caminos. Habilita el re-sellado.
+
+## Addendum v2b — reformulación de tono acotada por integridad numérica (2026-07-15)
+
+Conducida con Playwright (:3100, `GEMINI_API_KEY` presente). Verifica los tres invariantes del plan v2b:
+
+| Prueba | Resultado observado | Estado |
+|---|---|---|
+| FAQ con cifras reformulada ("what's your mileage policy") | Reformulación cálida y natural que **preserva exactas** las 3 cifras del original ("100 miles per day", "$0.45/mile", "10 days"); `toneRewritten: true` en telemetría | ✅ `vfh-v2b-tone-naturalization` |
+| Confirmación de booking completa (nombre/email/fechas/grupo/tipo RV) | *"Perfect, Morgan Lee! I've got everything I need — October 3 to October 10, 3 travelers, Travel Trailer. Our team will confirm availability..."* — string **determinista exacto**, nunca "confirmed", nunca pasó por el LLM | ✅ |
+| Mensaje de escalación completo | *"Thank you, Riley Chen. I've passed your details to our team — someone will reach out shortly..."* — string determinista exacto, nunca tocado | ✅ |
+| Red de seguridad en producción (no solo en tests) | En un turno real, la reformulación/rescate semántico devolvió `null` (llmUsed: false) y el sistema cayó automáticamente al verbatim de la store — la red de seguridad funcionó en vivo, no solo en el mock de tests | ✅ |
+
+**Hallazgo detectado y CORREGIDO en la misma sesión:** en una prueba ("do you allow pets on the trip"), el keyword-search determinista (v1, preexistente) matcheaba la entrada equivocada (daños) por dos causas: el keyword singular "pet" no matcheaba el plural "pets", y la palabra genérica "trip" daba puntos espurios que empataban con daños (ganando por orden de la store). **Fix aplicado en `lib/faq/search.ts`:** keyword-match tolerante a plural simple (`\bpet(s)?\b`) + peso de keyword dominante (10) sobre el overlap genérico (1). Verificado en vivo (ahora responde mascotas con `$75` exacto) y con 4 tests de regresión nuevos en `lib/faq/search.test.ts`. El caso sin ninguna señal de keyword ("four-legged friend") sigue dependiendo del rescate semántico LLM — eso es correcto (el determinista no puede inferir sinónimos sin semántica).
+
+## Verificación de código (v2b + fix searchFAQ)
+
+**51 tests** (47 previos + 4 de regresión de `searchFAQ`), tsc 0, eslint 0, `next build` exit 0.
+
+**Confirmación literal del developer (v2b):** _"confirmo, continuemos"_ (2026-07-15), tras observar la evidencia en vivo (reformulación con cifras exactas, reserva/escalación verbatim, y el fix de matcheo de FAQ). Habilita el re-sellado.
 
 ## Puesta en vivo
 

@@ -28,6 +28,8 @@ export interface VoiceTurnTelemetry {
   faqPath: "deterministic" | "llm" | "unresolved";
   /** Whether the optional LLM enhancement layer was invoked this turn (cost signal). */
   llmUsed: boolean;
+  /** v2b: whether the FAQ reply was tone-naturalized (vs. the verbatim store answer). */
+  toneRewritten: boolean;
 }
 
 export function logVoiceTurn(entry: VoiceTurnTelemetry): void {
