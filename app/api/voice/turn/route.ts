@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { processTurn, buildFinalizeInput } from "@/lib/voice/agent";
+import { detectBookingIntent, detectEscalation } from "@/lib/voice/nlu";
+import { matchFaqSemantically, extractDestination } from "@/lib/voice/llm";
+import { searchFAQ } from "@/lib/faq/search";
+import { faqStore } from "@/lib/faq/store";
 import { initVoiceState } from "@/lib/voice/session";
 import { ingestLead } from "@/lib/data";
 import { logVoiceTurn } from "@/lib/voice/telemetry";
@@ -71,9 +75,59 @@ export async function POST(request: NextRequest) {
 
   const { sessionId, mode, utterance, state } = parsed.data;
   const currentState = reviveState(state);
+  // The deterministic FSM is the source of truth and runs unchanged. The optional
+  // LLM layer below only *enriches* the result at this async boundary — it never
+  // drives the state machine, and no-ops entirely without GEMINI_API_KEY.
   const { state: nextState, agentReply: turnReply } = processTurn(currentState, utterance);
 
   let agentReply = turnReply;
+  let faqPath: "deterministic" | "llm" | "unresolved" = "deterministic";
+  let llmUsed = false;
+
+  // (1) Passive destination enrichment during a booking — purely additive.
+  if (
+    !nextState.reservation.destination &&
+    (nextState.awaiting !== null || nextState.phase === "qualification" || nextState.phase === "closing")
+  ) {
+    const dest = await extractDestination(utterance);
+    if (dest) {
+      nextState.reservation.destination = dest;
+      llmUsed = true;
+    }
+  }
+
+  // (2) LLM FAQ arbitration on any question-shaped turn (not booking/escalation/
+  // mid-slot/done). We can't gate on "searchFAQ found nothing": the deterministic
+  // keyword search over-matches on common words (e.g. "trip" pulls a pet question
+  // toward the damage entry), so it rarely returns empty AND is often wrong. Instead
+  // the LLM re-judges the topic against the full catalog and, when confident, OVERRIDES
+  // the (possibly spurious) deterministic answer. No key → matchFaqSemantically returns
+  // null → the deterministic result stands untouched.
+  const isQuestionTurn =
+    currentState.awaiting === null &&
+    !nextState.done &&
+    !detectBookingIntent(utterance) &&
+    detectEscalation(utterance) === null;
+  if (isQuestionTurn) {
+    const faqId = await matchFaqSemantically(utterance, faqStore);
+    if (faqId) {
+      const entry = faqStore.find((e) => e.id === faqId);
+      if (entry) {
+        agentReply = `${entry.answer} Is there anything else I can help with, or would you like to check availability for a trip?`;
+        nextState.phase = "discovery";
+        nextState.failedRecognitionCount = 0;
+        faqPath = "llm";
+        llmUsed = true;
+        // Keep the transcript coherent: replace whatever the FSM appended.
+        const lastTurn = nextState.turns[nextState.turns.length - 1];
+        if (lastTurn && lastTurn.role === "agent") lastTurn.text = agentReply;
+      }
+    } else if (searchFAQ(utterance).length === 0) {
+      // No deterministic hit and the LLM was off/unsure — genuinely unresolved.
+      faqPath = "unresolved";
+    }
+  }
+
   let ingestFailed = false;
   let leadId: string | undefined = nextState.leadId;
   if (nextState.done && !leadId) {
@@ -114,6 +168,8 @@ export async function POST(request: NextRequest) {
     ingestFailed,
     turnCount: nextState.turns.length,
     utteranceChars: utterance.length,
+    faqPath,
+    llmUsed,
   });
 
   const res = NextResponse.json({ state: nextState, agentReply, leadId: leadId ?? null });

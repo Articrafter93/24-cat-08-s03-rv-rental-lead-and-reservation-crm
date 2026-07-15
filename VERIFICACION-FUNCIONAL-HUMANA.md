@@ -2,7 +2,21 @@
 
 > Hard blocker del `SELLO DE APROBACIÓN PARCIAL`. Solo la confirmación literal del developer en el chat aprueba. No se autoemite.
 
-**Estado: APROBADA POR EL DEVELOPER (2026-07-14)**
+**Estado: APROBADA POR EL DEVELOPER (2026-07-14) — v1 + addendum v2a (ver abajo)**
+
+## Addendum v2a — capa LLM opcional (VFH nueva, aprobada 2026-07-14)
+
+Conducida con Playwright sobre el dev server local (:3100) con `GEMINI_API_KEY` colocada por el developer. Ambos caminos verificados en vivo:
+
+| Prueba | Resultado observado | Evidencia |
+|---|---|---|
+| FAQ parafraseada ("will my four-legged friend be an issue on the trip") | Respondió la política de mascotas ($75 pet fee) — el LLM matcheó la paraphrase y **overrideó el falso positivo determinista** que respondía sobre daños; telemetría `faqPath: llm` | live |
+| Extracción de destino ("we're heading to Yellowstone") | Tarjeta de reserva del lead muestra `DESTINATION: Yellowstone` | `vfh-v2a-destination-yellowstone` |
+| Fallback sin key | Determinista intacto (`llmUsed: false`); probado por 41 tests (32 FSM + 9 llm) | tests |
+
+**Bugs encontrados y corregidos conduciendo la VFH v2a** (diagnosticados con telemetría/logs, no adivinando): (1) gating equivocado — el LLM nunca disparaba porque el keyword-search da falsos positivos con palabras comunes; corregido a arbitraje en todo turno tipo-pregunta. (2) `gemini-2.5-flash` retirado para keys nuevas (404, tragado por el catch); corregido a `gemini-flash-latest`.
+
+**Confirmación literal del developer (v2a):** _"confirmo"_ (2026-07-14), tras observar la evidencia de ambos caminos. Habilita el re-sellado.
 
 ## Puesta en vivo
 

@@ -17,7 +17,7 @@
 ## Subcategorías / superficies menores
 
 - **Automatización operativa** (secundaria): cron de follow-up, alertas de leads calientes en tiempo real.
-- **Chatbot/Agente IA** (superficie emergente): capa de agente de voz/chat planeada para calificación conversacional inbound (se declara al reformular el brief; hoy no construida).
+- **Chatbot/Agente IA** (superficie **construida** — v1 determinista + v2a capa LLM opcional): agente de voz/chat inbound para calificación conversacional, con motor determinista (FSM) y capa LLM opcional fallback-safe (Gemini free tier) para extracción de destino y FAQ parafraseada. Activa el perfil CAT-02 en `revision-final`.
 - **Integraciones** (superficie de soporte): webhooks de intake multicanal con verificación HMAC, adaptadores a CRM/email (sandbox).
 
 ## Renderabilidad
@@ -25,9 +25,10 @@
 - **`renderizable`: SÍ** — app Next.js con UI (login, dashboard, pipeline Kanban, intake, alertas, follow-up).
 - **Implicación:** la VFH sigue la rama renderizable (puesta en vivo + conducción de UI con Playwright + barrido de cobertura interactiva). `INSPECCION-VISUAL.md` es hard blocker.
 
-## Perfiles GATE 9 requeridos (provisional)
+## Perfiles GATE 9 requeridos
 
 - Automatización comercial / RevOps (correctitud de pipeline, dedup idempotente, secuencias de follow-up).
+- **CAT-02 Chatbots/Agentes IA** (por la capa LLM v2a, ahora superficie real): prompt injection tratado como dato, trazabilidad de coste/errores, fallback seguro ante fallo de modelo, sin exponer instrucciones internas.
 - Seguridad de webhooks (verificación HMAC del intake multicanal).
 - Datos/PII sandbox (leads ficticios; sin datos reales).
 - Frontend funcional (cobertura interactiva, sin no-ops).

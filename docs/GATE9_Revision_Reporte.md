@@ -1,8 +1,22 @@
 # GATE 9 — Reporte de Revisión Final
 
-**Estado:** `APROBADO` (PR_APPROVED) — tras Delta Audit del gate full-stack
-**Fecha:** 2026-07-14 (rechazo inicial + re-auditoría delta el mismo día)
-**Ejecutor:** revision-final (invocada por el developer en cierre parcial)
+**Estado:** `APROBADO` (PR_APPROVED) — v1 + **re-auditoría delta v2a** (capa LLM)
+**Fecha:** 2026-07-14 (cierre v1 + re-auditoría v2a el mismo día)
+**Ejecutor:** revision-final (delta audits de la misma sesión)
+
+## Re-auditoría delta v2a (capa LLM opcional)
+
+Cambios auditados: `lib/voice/llm.ts`, `app/api/voice/turn/route.ts`, `lib/voice/telemetry.ts`, `.env.example`, tests `llm.test.ts`. `processTurn` (FSM) sin tocar.
+
+- **Cero tolerancia:** 41 tests verdes (32 FSM intactos + 9 nuevos), tsc 0, eslint 0, `next build` exit 0. ✅
+- **WF-011:** sigue `PASS`; filas *Cost management* y *Security y permissions* actualizadas (superficie LLM real). ✅
+- **Perfil CAT-02 (nuevo, ahora aplica):** prompt injection tratado como dato (`sanitizeLeadInput`) ✅; salida del modelo validada como candidato (`faqId` contra store, no dirige estado) ✅; fallback seguro ante fallo/sin key (verificado en vivo + tests) ✅; trazabilidad de coste (`telemetry` `llmUsed`/`faqPath`) ✅; sin exponer instrucciones internas ✅.
+- **VFH v2a:** aprobada por el developer (ambos caminos en vivo). ✅
+- **Veredicto v2a:** `PR_APPROVED` — se mantiene. Sello se re-emite.
+
+---
+
+### (Historial v1)
 **Proyecto:** 24 - CAT-08-S03 - RV Rental Lead and Reservation CRM
 **Clasificación:** `CAT-08` CRM/RevOps · `tipo_cliente: ficticio` (portafolio, slot CAT-08-S03) · `renderizable: SÍ` · `idioma_render: en`
 

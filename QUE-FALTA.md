@@ -6,8 +6,8 @@
 
 ## Estado actual
 
-- **Playbook phase:** `SELLO DE APROBACIÓN PARCIAL emitido` (2026-07-14). Cierre parcial completo: VFH firmada + revision-final PR_APPROVED (WF-011 PASS) + cliente-exigente Modo B EXITO TOTAL + reclutador-exigente APTO_PORTAFOLIO + gates visuales SI.
-- **Next action:** Commit del changeset de la sesión vía `gh` (repo ya existe). Luego cierre FINAL (tarea #12): resolver **persistencia serverless** (store `local` in-memory no sobrevive serverless — ver `00-ARQUITECTURA-PROYECTO.md` cap. Database) → `vrc` deploy → 2.ª VFH sobre URL → SELLO FINAL → `add-to-portfolio`. Capa LLM v2 = `new-feature` aparte.
+- **Playbook phase:** `v2a RE-SELLADA` (2026-07-14). Capa LLM opcional (Gemini `gemini-flash-latest`, free tier) verificada en vivo (FAQ parafraseada + destino) + fallback determinista por tests. Re-sello parcial emitido: revision-final PR_APPROVED (WF-011 + CAT-02) + cliente-exigente B EXITO TOTAL + reclutador APTO (41 tests) + VFH v2a firmada.
+- **Next action:** `gh` commit del changeset v2a. Luego cierre FINAL (tarea #12): resolver **persistencia serverless** (store `local` no sobrevive serverless) → `vrc` deploy → 2.ª VFH sobre URL → SELLO FINAL → `add-to-portfolio`. En el deploy, la key de Gemini va como secret del repo (server-side) para el camino LLM en vivo. **v2b** (generación conversacional LLM completa, activa gate C7 de sanitización de enlaces) = Plan Mode aparte.
 - **Clasificación:** `CAT-08` CRM/RevOps — `ficticio` candidato de portafolio (slot CAT-08-S03) — `renderizable: SÍ` — `idioma_render: en`.
 - **Última sesión:** 2026-07-14.
 - **Carpeta:** `24 - CAT-08-S03 - RV Rental Lead and Reservation CRM` (renombrada desde "...Lead & Reservation..." — el `&` rompía `cmd.exe` en scripts npm de Windows).
