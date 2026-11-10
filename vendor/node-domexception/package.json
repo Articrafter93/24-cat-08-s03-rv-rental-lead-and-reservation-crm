@@ -1,0 +1,8 @@
+{
+  "name": "node-domexception",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local stand-in for the deprecated node-domexception@1.0.0. Node.js 17+ ships DOMException as a global, which is all the original package exported.",
+  "main": "index.js",
+  "license": "MIT"
+}
