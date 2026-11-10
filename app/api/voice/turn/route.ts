@@ -54,8 +54,9 @@ const TurnRequestSchema = z.object({
   // Kept permissive on purpose: a malformed state must NOT 400 the whole request
   // (a demo conversation should never dead-end on a serialization hiccup). The
   // strict validation + bounding happens in reviveState, which falls back to a
-  // fresh state instead of rejecting.
-  state: z.unknown(),
+  // fresh state instead of rejecting. A missing state is accepted the same way:
+  // zod 4 makes a z.unknown() key required, so it is marked optional explicitly.
+  state: z.unknown().optional(),
 });
 
 function reviveState(raw: unknown): VoiceSessionState {
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const parsed = TurnRequestSchema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: z.flattenError(parsed.error) }, { status: 400 });
   }
 
   const { sessionId, mode, utterance, state } = parsed.data;

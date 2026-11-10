@@ -21,10 +21,11 @@
     "@google/genai": "^2.11.0",
     "@prisma/client": "^6.7.0",
     "next": "16.4.3",
+    "node-domexception": "file:./vendor/node-domexception",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "resend": "^4.5.1",
-    "zod": "^3.24.3"
+    "resend": "^6.37.0",
+    "zod": "^4.6.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -46,7 +47,8 @@
     },
     "@prisma/config": {
       "deepmerge-ts": "8.0.2"
-    }
+    },
+    "node-domexception": "$node-domexception"
   },
   "allowScripts": {
     "prisma": false,

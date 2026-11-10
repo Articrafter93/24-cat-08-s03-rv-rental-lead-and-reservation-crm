@@ -5,7 +5,7 @@ import { ingestLead } from "@/lib/data";
 
 const IntakeSchema = z.object({
   name: z.string().min(1).max(200),
-  email: z.string().email(),
+  email: z.email(),
   phone: z.string().optional(),
   message: z.string().min(1).max(2000),
 });
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const parsed = IntakeSchema.safeParse(JSON.parse(rawBody));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: z.flattenError(parsed.error) }, { status: 400 });
   }
 
   const { name, email, phone, message } = parsed.data;
