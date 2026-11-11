@@ -9,6 +9,7 @@ import type { FaqEntry } from "@/lib/faq/types";
 import { initVoiceState } from "@/lib/voice/session";
 import { ingestLead } from "@/lib/data";
 import { logVoiceTurn } from "@/lib/voice/telemetry";
+import { checkRateLimit, clientIdentifier, tooManyRequests } from "@/lib/security/rate-limit";
 import type { VoiceSessionState } from "@/lib/voice/types";
 
 // The client echoes back the conversation state it received last turn — it is
@@ -67,6 +68,9 @@ function reviveState(raw: unknown): VoiceSessionState {
 }
 
 export async function POST(request: NextRequest) {
+  const limit = await checkRateLimit("voice-turn", clientIdentifier(request));
+  if (!limit.allowed) return tooManyRequests(limit.retryAfterSeconds);
+
   const startedAt = Date.now();
   const requestId = crypto.randomUUID();
   const body = await request.json().catch(() => null);

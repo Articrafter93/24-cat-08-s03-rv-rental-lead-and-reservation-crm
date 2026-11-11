@@ -1,8 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, verifySessionCookieValue } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { sessionKey } from "@/lib/auth/session-key";
+import { resolveDemoSession } from "@/lib/auth/demo-session";
 
 export async function proxy(request: NextRequest) {
-  const accountId = await verifySessionCookieValue(request.cookies.get(SESSION_COOKIE)?.value);
+  // Same rule as the server pages and the API routes (lib/auth/demo-session.ts).
+  const account = await resolveDemoSession(request.cookies.get(SESSION_COOKIE)?.value, sessionKey());
+  const accountId = account?.id ?? null;
 
   const isDashboardRoute =
     request.nextUrl.pathname.startsWith("/dashboard") ||

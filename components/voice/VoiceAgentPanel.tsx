@@ -91,7 +91,11 @@ export function VoiceAgentPanel() {
       });
 
       if (!res.ok) {
-        setMessages((prev) => [...prev, { role: "agent", text: "Sorry, something went wrong. Please try again." }]);
+        const text =
+          res.status === 429
+            ? "You're sending messages faster than this chat allows. Please wait a moment and try again."
+            : "Sorry, something went wrong. Please try again.";
+        setMessages((prev) => [...prev, { role: "agent", text }]);
         return;
       }
 
@@ -144,6 +148,10 @@ export function VoiceAgentPanel() {
           Twilio/Vapi/Retell AI for real phone (PSTN) call handling — the conversation logic and CRM
           integration below are identical either way.
         </p>
+        <p className="mt-2 font-medium" style={{ color: "var(--color-neutral-700)" }}>
+          Please don&apos;t share real personal data. This chat is public: the leads it creates appear in a CRM
+          that other visitors can open, with email and phone masked. Use made-up details.
+        </p>
       </div>
 
       {/* Transcript */}
@@ -187,7 +195,7 @@ export function VoiceAgentPanel() {
           className="rounded-xl p-3 text-sm font-medium"
           style={{ backgroundColor: "#FEF2F2", border: "1px solid #FECACA", color: "#B91C1C" }}
         >
-          🚫 This demo chat is temporarily locked due to off-topic use. Time remaining: {lockRemaining}.
+          🚫 This chat is temporarily locked due to off-topic use. Time remaining: {lockRemaining}.
         </div>
       )}
 

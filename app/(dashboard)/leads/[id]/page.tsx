@@ -129,9 +129,10 @@ export default async function LeadDetailPage({
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{
+                    // "sending" is a claimed step on its way out (lib/data/follow-up-claim.ts): neutral, like pending.
                     backgroundColor: event.status === "sent"
                       ? "#16A34A"
-                      : event.status === "pending"
+                      : event.status === "pending" || event.status === "sending"
                       ? "var(--color-neutral-400)"
                       : "#DC2626",
                   }}
@@ -141,7 +142,10 @@ export default async function LeadDetailPage({
                     Step {event.step + 1} — {event.status}
                   </span>
                   <span className="text-xs ml-2" style={{ color: "var(--color-neutral-400)" }}>
-                    {event.sentAt
+                    {/* While "sending", sentAt holds the claim time, not a send time. */}
+                    {event.status === "sending" && event.sentAt
+                      ? `Sending since ${new Date(event.sentAt).toLocaleString()}`
+                      : event.sentAt
                       ? `Sent ${new Date(event.sentAt).toLocaleString()}`
                       : `Scheduled ${new Date(event.scheduledAt).toLocaleString()}`}
                   </span>

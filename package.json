@@ -20,6 +20,8 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "@google/genai": "^2.11.0",
     "@prisma/client": "^6.7.0",
+    "@upstash/ratelimit": "^2.2.0",
+    "@upstash/redis": "^1.41.0",
     "next": "16.4.3",
     "node-domexception": "file:./vendor/node-domexception",
     "react": "19.2.4",

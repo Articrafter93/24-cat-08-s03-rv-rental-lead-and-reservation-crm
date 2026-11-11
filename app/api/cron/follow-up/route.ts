@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { processFollowUpEvents } from "@/lib/data";
+import { isAuthorizedCronRequest } from "@/lib/cron/authorize";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function GET(request: NextRequest) {
-  // Verify Vercel Cron authorization header
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Only Vercel Cron, with the configured CRON_SECRET, may trigger the follow-up run.
+  if (!isAuthorizedCronRequest(request.headers.get("authorization"))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma/client";
 import { classifyLead } from "@/lib/ai/classify";
 import { sendConfirmationEmail, sendInternalAlert, sendFollowUpEmail } from "@/lib/email/resend";
+import { FOLLOW_UP_CLAIM_TIMEOUT_MS } from "./follow-up-claim";
 import type {
   IngestLeadInput,
   IngestLeadResult,
@@ -151,7 +152,11 @@ export async function getLeadDetail(contactId: string): Promise<LeadDetail | nul
 }
 
 export async function getAlertsFeed(): Promise<AlertWithContact[]> {
-  return prisma.internalAlert.findMany({ include: { contact: true }, orderBy: { createdAt: "desc" }, take: 50 });
+  return prisma.internalAlert.findMany({
+    include: { contact: { include: { lead: { select: { source: true, externalId: true } } } } },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 }
 
 export async function getFollowUpOverview(): Promise<FollowUpOverview> {
@@ -159,7 +164,7 @@ export async function getFollowUpOverview(): Promise<FollowUpOverview> {
     prisma.followUpSequence.findMany(),
     prisma.followUpEvent.findMany({
       where: { status: "pending" },
-      include: { contact: true, sequence: true },
+      include: { contact: { include: { lead: { select: { source: true, externalId: true } } } }, sequence: true },
       orderBy: { scheduledAt: "asc" },
       take: 50,
     }),
@@ -177,24 +182,54 @@ export async function getStalledEntries(): Promise<StalledEntry[]> {
 
 export async function processFollowUpEvents(): Promise<FollowUpProcessResult> {
   const now = new Date();
-  const pendingEvents = await prisma.followUpEvent.findMany({
-    where: { status: "pending", scheduledAt: { lte: now } },
+  const staleClaimBefore = new Date(now.getTime() - FOLLOW_UP_CLAIM_TIMEOUT_MS);
+  // Due steps, plus steps whose claim was abandoned (a run that died between claiming and finishing).
+  const claimable: Prisma.FollowUpEventWhereInput[] = [
+    { status: "pending" },
+    { status: "sending", sentAt: { lt: staleClaimBefore } },
+  ];
+  const dueEvents = await prisma.followUpEvent.findMany({
+    where: { OR: [{ status: "pending", scheduledAt: { lte: now } }, claimable[1]] },
     include: { contact: true, sequence: true },
     take: 50,
   });
 
   const results = await Promise.allSettled(
-    pendingEvents.map(async (event) => {
+    dueEvents.map(async (event) => {
       const steps = event.sequence.steps as Array<{ step: number; subject: string; template: string }>;
       const stepConfig = steps.find((s) => s.step === event.step);
-      if (!stepConfig) return;
+      if (!stepConfig) return false;
 
-      await sendFollowUpEmail(
-        event.contact.email,
-        event.contact.name,
-        stepConfig.subject,
-        `Hi ${event.contact.name},\n\nThis is a follow-up from RV Corp regarding your rental inquiry.\n\nBest,\nThe RV Corp Team`
-      );
+      // Claim the event before sending. If two cron runs overlap, only the one that moves it to
+      // "sending" sends the email. While "sending", sentAt holds the claim time, so an abandoned
+      // claim can be taken again after FOLLOW_UP_CLAIM_TIMEOUT_MS.
+      const claim = await prisma.followUpEvent.updateMany({
+        where: { id: event.id, OR: claimable },
+        data: { status: "sending", sentAt: new Date() },
+      });
+      if (claim.count === 0) return false;
+
+      try {
+        const sent = await sendFollowUpEmail(
+          event.contact.email,
+          event.contact.name,
+          stepConfig.subject,
+          `Hi ${event.contact.name},\n\nThis is a follow-up from RV Corp regarding your rental inquiry.\n\nBest,\nThe RV Corp Team`,
+          // Resend drops a repeated send with the same key, so a retried step is not emailed twice.
+          `follow-up-${event.id}`
+        );
+        // Resend reports failures in the result instead of throwing.
+        if (sent?.error) throw new Error(`Follow-up email failed: ${sent.error.name}`);
+      } catch (error) {
+        // Release the claim so the next run retries this step. If the release itself fails, the
+        // claim times out instead, and the original error is the one reported.
+        try {
+          await prisma.followUpEvent.update({ where: { id: event.id }, data: { status: "pending", sentAt: null } });
+        } catch (releaseError) {
+          console.error("[follow-up] could not release a claim", releaseError instanceof Error ? releaseError.name : "unknown");
+        }
+        throw error;
+      }
 
       await prisma.followUpEvent.update({ where: { id: event.id }, data: { status: "sent", sentAt: new Date() } });
 
@@ -213,6 +248,7 @@ export async function processFollowUpEvents(): Promise<FollowUpProcessResult> {
       }
 
       await prisma.auditLog.create({ data: { entityType: "FollowUpEvent", entityId: event.id, action: "sent" } });
+      return true;
     })
   );
 
@@ -222,7 +258,8 @@ export async function processFollowUpEvents(): Promise<FollowUpProcessResult> {
   });
 
   return {
-    processed: pendingEvents.length,
+    // Steps this run actually sent: skipped or already-claimed events do not count.
+    processed: results.filter((r) => r.status === "fulfilled" && r.value === true).length,
     errors: results.filter((r) => r.status === "rejected").length,
     stalledMarked: stalled.count,
   };

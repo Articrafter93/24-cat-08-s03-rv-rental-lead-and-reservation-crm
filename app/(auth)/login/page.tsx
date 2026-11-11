@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/auth/LoginForm";
+import { isDemoAuthEnabled } from "@/lib/auth/demo-flag";
 
 export default function LoginPage() {
   return (
@@ -20,7 +21,7 @@ export default function LoginPage() {
           </p>
         </div>
         <p style={{ color: "rgba(196, 168, 130, 0.6)" }} className="text-xs">
-          © 2026 RV Corp — Portfolio demo by Antigravity Projects
+          © 2026 RV Corp — fictional company, sandbox data
         </p>
       </div>
 
@@ -36,21 +37,23 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Demo credentials badge */}
-          <div
-            className="rounded-lg p-3 text-sm"
-            style={{
-              backgroundColor: "rgba(196, 168, 130, 0.15)",
-              border: "1px solid rgba(196, 168, 130, 0.4)",
-            }}
-          >
-            <p className="font-medium mb-1" style={{ color: "var(--color-brand-earth)" }}>
-              No signup needed
-            </p>
-            <p style={{ color: "var(--color-neutral-700)" }}>
-              Pick a demo account below — the password is pre-filled.
-            </p>
-          </div>
+          {/* Demo credentials badge: only when this build has the demo login */}
+          {isDemoAuthEnabled() ? (
+            <div
+              className="rounded-lg p-3 text-sm"
+              style={{
+                backgroundColor: "rgba(196, 168, 130, 0.15)",
+                border: "1px solid rgba(196, 168, 130, 0.4)",
+              }}
+            >
+              <p className="font-medium mb-1" style={{ color: "var(--color-brand-earth)" }}>
+                No signup needed
+              </p>
+              <p style={{ color: "var(--color-neutral-700)" }}>
+                Pick a demo account below — the password is pre-filled.
+              </p>
+            </div>
+          ) : null}
 
           <LoginForm />
         </div>

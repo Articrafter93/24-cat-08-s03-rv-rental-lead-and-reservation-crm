@@ -60,7 +60,17 @@ CRM lead  ──►  AI classification (type · urgency · intent · booking rea
   differentiated follow-up sequences.
 - **Dual data mode** (`DATA_SOURCE_MODE`): an in-memory store (default — the reason this runs with no
   setup) and a Prisma/PostgreSQL implementation for deployment, behind one call surface.
-- **Auth:** frictionless demo login (account picker + pre-filled sandbox credential + logout).
+- **Auth:** frictionless demo login (account picker + pre-filled sandbox credential + logout). The
+  session cookie is HMAC-signed with a key generated per build (`next.config.ts`) and read only by a
+  `server-only` module (`lib/auth/session-key.ts`); one rule (`lib/auth/demo-session.ts`) decides the
+  session for the proxy, the pages and the API routes.
+- **Public surface hardening:** rate limits on the voice agent, the intake and the demo login
+  (`lib/security/rate-limit.ts`: shared through Upstash Redis when configured, per instance in memory
+  otherwise); the in-app intake form only accepts signed-in, same-origin requests and every other
+  channel needs an HMAC signature; the follow-up cron fails closed without `CRON_SECRET` and claims
+  each step before emailing it; and every lead a visitor creates (through `/voice` or the `/intake`
+  form) has its email and phone masked in every CRM view, while the seeded fictional leads are shown
+  as they are (`lib/privacy/public-channel.ts`).
 
 ## How this maps to production
 
@@ -84,7 +94,11 @@ npx prisma generate
 npm run dev          # DATA_SOURCE_MODE defaults to "local" — no database needed
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. The demo login works in development with no setup; a production
+build (a Vercel preview included) only has it when `NEXT_PUBLIC_DEMO_AUTH=enabled` is set **at build
+time** (Next inlines it, so setting it later needs a new build). The session signing key needs no
+setup either: `next.config.ts` generates one per build; an optional `DEMO_SESSION_SECRET` of at least
+32 characters replaces it. Tests: `npm test`.
 
 ## Notes
 

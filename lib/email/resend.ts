@@ -25,15 +25,20 @@ export async function sendFollowUpEmail(
   to: string,
   name: string,
   subject: string,
-  body: string
+  body: string,
+  // Resend ignores a repeated send with the same key, so a retried follow-up step is not sent twice.
+  idempotencyKey?: string
 ) {
   if (!resend) return null;
-  return resend.emails.send({
-    from: FROM_EMAIL,
-    to,
-    subject,
-    text: body,
-  });
+  return resend.emails.send(
+    {
+      from: FROM_EMAIL,
+      to,
+      subject,
+      text: body,
+    },
+    idempotencyKey ? { idempotencyKey } : undefined
+  );
 }
 
 export async function sendInternalAlert(
