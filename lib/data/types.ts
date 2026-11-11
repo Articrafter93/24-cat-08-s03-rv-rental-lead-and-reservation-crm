@@ -51,8 +51,11 @@ export type LeadDetail = ContactWithLead & {
   alerts: InternalAlert[];
 };
 
-export type AlertWithContact = InternalAlert & { contact: Contact };
-export type FollowUpEventWithRelations = FollowUpEvent & { contact: Contact; sequence: FollowUpSequence };
+// The lead's source and externalId travel with the contact so dashboard views can mask the leads
+// that visitors typed (lib/privacy/public-channel.ts).
+export type ContactWithLeadSource = Contact & { lead: Pick<Lead, "source" | "externalId"> };
+export type AlertWithContact = InternalAlert & { contact: ContactWithLeadSource };
+export type FollowUpEventWithRelations = FollowUpEvent & { contact: ContactWithLeadSource; sequence: FollowUpSequence };
 
 export interface FollowUpOverview {
   sequences: FollowUpSequence[];

@@ -77,10 +77,10 @@ const NOTICE_MESSAGE =
   "I'm the RV Corp booking assistant — I can help with RV rentals, availability, pricing, and trip planning. What can I help you sort out?";
 
 const WARNING_MESSAGE =
-  "Heads up: this assistant only handles RV rental and reservation questions. If you keep sending unrelated messages, this demo chat will be locked for 24 hours.";
+  "Heads up: this assistant only handles RV rental and reservation questions. If you keep sending unrelated messages, this chat will be locked for 24 hours.";
 
 const LOCK_MESSAGE =
-  "This demo chat has been locked for 24 hours after repeated off-topic messages. It's a public portfolio demo, so this guardrail keeps it usable for everyone — please check back later.";
+  "This chat has been locked for 24 hours after repeated off-topic messages. It is public, so this guardrail keeps it usable for everyone — please check back later.";
 
 function normalize(text: string): string {
   return text
@@ -165,7 +165,7 @@ export function evaluateGuard(
     const remaining = formatRemainingLock((current.lockUntil as number) - now);
     return {
       type: "locked",
-      message: `This demo chat is temporarily locked (off-topic use). Try again in ${remaining}.`,
+      message: `This chat is temporarily locked (off-topic use). Try again in ${remaining}.`,
       state: current,
     };
   }

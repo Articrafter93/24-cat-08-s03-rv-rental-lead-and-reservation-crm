@@ -9,7 +9,12 @@ export default defineConfig({
     include: ["lib/**/*.test.ts"],
   },
   resolve: {
-    // Mirror the `@/*` → project-root alias used across the app.
-    alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
+    alias: {
+      // Mirror the `@/*` → project-root alias used across the app.
+      "@": fileURLToPath(new URL(".", import.meta.url)),
+      // Next resolves "server-only" itself (it is not an installed package). Tests run on the server
+      // side, so it maps to Next's own empty module, as Next does for server code.
+      "server-only": fileURLToPath(new URL("./node_modules/next/dist/compiled/server-only/empty.js", import.meta.url)),
+    },
   },
 });

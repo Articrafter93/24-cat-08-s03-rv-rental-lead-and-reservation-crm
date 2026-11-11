@@ -28,17 +28,17 @@ export function SiteFooter() {
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--color-brand-orange)" }}>
-            About this demo
+            About this build
           </p>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>
-            Portfolio demonstration by Antigravity Projects. Fictional company, sandbox data.
+            Fictional company, sandbox data.
             The voice/chat agent runs in-browser; production connects to Twilio / Vapi for real telephony.
           </p>
         </div>
       </div>
       <div className="border-t" style={{ borderColor: "rgba(255,255,255,0.1)" }}>
         <p className="max-w-6xl mx-auto px-6 py-4 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-          © 2026 RV Corp — Portfolio demo. Not a real rental company.
+          © 2026 RV Corp — not a real rental company.
         </p>
       </div>
     </footer>

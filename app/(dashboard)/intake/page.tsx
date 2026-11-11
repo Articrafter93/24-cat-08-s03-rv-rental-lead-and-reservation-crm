@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { describeIntakeError } from "@/lib/intake/describe-error";
 
 type FormState = "idle" | "loading" | "success" | "error";
 
@@ -22,8 +23,8 @@ export default function IntakePage() {
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? `HTTP ${res.status}`);
+        const data = await res.json().catch(() => null);
+        throw new Error(describeIntakeError(data, res.status));
       }
 
       setState("success");
@@ -157,6 +158,10 @@ export default function IntakePage() {
         <p className="text-xs text-center" style={{ color: "var(--color-neutral-400)" }}>
           This form simulates the <code className="text-xs">POST /api/intake/form-web</code> endpoint.
           The same API accepts webhooks from any channel.
+        </p>
+        <p className="text-xs text-center font-medium" style={{ color: "var(--color-neutral-700)" }}>
+          Please don&apos;t enter real personal data: other visitors can open this CRM. Email and phone are
+          masked in every view.
         </p>
       </form>
     </div>

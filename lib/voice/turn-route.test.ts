@@ -1,5 +1,12 @@
 import { NextRequest } from "next/server";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// Rate limiting counts in memory here: Upstash is switched off, whatever the shell has.
+beforeEach(() => {
+  vi.stubEnv("UPSTASH_REDIS_REST_URL", "");
+  vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "");
+});
+afterEach(() => vi.unstubAllEnvs());
 
 // Request-contract tests for POST /api/voice/turn. The data layer, telemetry and the
 // optional LLM layer are mocked so the test never touches a database or a network API.

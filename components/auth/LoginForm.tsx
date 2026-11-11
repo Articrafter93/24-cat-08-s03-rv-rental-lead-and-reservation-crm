@@ -3,8 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
+import { isDemoAuthEnabled } from "@/lib/auth/demo-flag";
 
 export function LoginForm() {
+  // A build without the demo login says so, instead of offering accounts that the API would refuse.
+  if (!isDemoAuthEnabled()) {
+    return (
+      <p className="text-sm" role="status" style={{ color: "var(--color-neutral-700)" }}>
+        Sign-in is not available in this deployment.
+      </p>
+    );
+  }
+  return <DemoLoginForm />;
+}
+
+function DemoLoginForm() {
   const [accountId, setAccountId] = useState(DEMO_ACCOUNTS[0].id);
   const account = DEMO_ACCOUNTS.find((a) => a.id === accountId) ?? DEMO_ACCOUNTS[0];
   const [error, setError] = useState<string | null>(null);

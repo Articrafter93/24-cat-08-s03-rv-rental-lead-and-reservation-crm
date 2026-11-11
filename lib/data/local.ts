@@ -1,8 +1,9 @@
 import { randomUUID } from "crypto";
-import type { Prisma } from "@prisma/client";
+import type { Contact, Prisma } from "@prisma/client";
 import { localStore } from "./local-store";
 import { classifyLead } from "@/lib/ai/classify";
 import { sendConfirmationEmail, sendInternalAlert, sendFollowUpEmail } from "@/lib/email/resend";
+import { FOLLOW_UP_CLAIM_TIMEOUT_MS } from "./follow-up-claim";
 import type {
   IngestLeadInput,
   IngestLeadResult,
@@ -10,6 +11,7 @@ import type {
   PipelineBoardData,
   LeadDetail,
   AlertWithContact,
+  ContactWithLeadSource,
   FollowUpOverview,
   StalledEntry,
   FollowUpProcessResult,
@@ -203,11 +205,17 @@ export async function getLeadDetail(contactId: string): Promise<LeadDetail | nul
   return { ...contact, lead: { ...lead, classification }, entries, followUps, alerts };
 }
 
+// Same shape as the Prisma include { lead: { select: { source: true, externalId: true } } }.
+function withLeadSource(contact: Contact): ContactWithLeadSource {
+  const lead = localStore.leads.find((l) => l.id === contact.leadId);
+  return { ...contact, lead: { source: lead?.source ?? "", externalId: lead?.externalId ?? "" } };
+}
+
 export async function getAlertsFeed(): Promise<AlertWithContact[]> {
   return [...localStore.alerts]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 50)
-    .map((a) => ({ ...a, contact: localStore.contacts.find((c) => c.id === a.contactId)! }));
+    .map((a) => ({ ...a, contact: withLeadSource(localStore.contacts.find((c) => c.id === a.contactId)!) }));
 }
 
 export async function getFollowUpOverview(): Promise<FollowUpOverview> {
@@ -219,7 +227,7 @@ export async function getFollowUpOverview(): Promise<FollowUpOverview> {
     .slice(0, 50)
     .map((e) => ({
       ...e,
-      contact: localStore.contacts.find((c) => c.id === e.contactId)!,
+      contact: withLeadSource(localStore.contacts.find((c) => c.id === e.contactId)!),
       sequence: localStore.sequences.find((s) => s.id === e.sequenceId)!,
     }));
   void now;
@@ -244,7 +252,14 @@ export async function getStalledEntries(): Promise<StalledEntry[]> {
 
 export async function processFollowUpEvents(): Promise<FollowUpProcessResult> {
   const now = new Date();
-  const pending = localStore.followUpEvents.filter((e) => e.status === "pending" && e.scheduledAt <= now).slice(0, 50);
+  const staleClaimBefore = new Date(now.getTime() - FOLLOW_UP_CLAIM_TIMEOUT_MS);
+  // Same rule as the Prisma implementation: while "sending", sentAt holds the claim time, and a
+  // claim older than FOLLOW_UP_CLAIM_TIMEOUT_MS is abandoned and can be taken again.
+  const isClaimable = (e: { status: string; sentAt: Date | null }) =>
+    e.status === "pending" || (e.status === "sending" && e.sentAt !== null && e.sentAt < staleClaimBefore);
+  const pending = localStore.followUpEvents
+    .filter((e) => (e.status === "pending" && e.scheduledAt <= now) || (e.status === "sending" && isClaimable(e)))
+    .slice(0, 50);
 
   let processed = 0;
   let errors = 0;
@@ -259,12 +274,29 @@ export async function processFollowUpEvents(): Promise<FollowUpProcessResult> {
       const stepConfig = steps.find((s) => s.step === event.step);
       if (!stepConfig) continue;
 
-      await sendFollowUpEmail(
-        contact.email,
-        contact.name,
-        stepConfig.subject,
-        `Hi ${contact.name},\n\nThis is a follow-up from RV Corp regarding your rental inquiry.\n\nBest,\nThe RV Corp Team`
-      );
+      // Check and claim synchronously, before the first await: a run that overlaps this one in the
+      // same instance skips the event instead of sending the same step twice.
+      if (!isClaimable(event)) continue;
+      event.status = "sending";
+      event.sentAt = new Date();
+
+      try {
+        const sent = await sendFollowUpEmail(
+          contact.email,
+          contact.name,
+          stepConfig.subject,
+          `Hi ${contact.name},\n\nThis is a follow-up from RV Corp regarding your rental inquiry.\n\nBest,\nThe RV Corp Team`,
+          // Resend drops a repeated send with the same key, so a retried step is not emailed twice.
+          `follow-up-${event.id}`
+        );
+        // Resend reports failures in the result instead of throwing.
+        if (sent?.error) throw new Error(`Follow-up email failed: ${sent.error.name}`);
+      } catch (error) {
+        // Release the claim so the next run retries this step.
+        event.status = "pending";
+        event.sentAt = null;
+        throw error;
+      }
 
       event.status = "sent";
       event.sentAt = new Date();

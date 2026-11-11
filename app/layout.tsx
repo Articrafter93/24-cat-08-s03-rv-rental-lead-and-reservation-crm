@@ -25,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "RV Corp CRM",
-  description: "AI-powered lead management and follow-up automation — Antigravity Projects demo",
+  description: "AI-powered lead management and follow-up automation for RV rental operations",
 };
 
 export default function RootLayout({
